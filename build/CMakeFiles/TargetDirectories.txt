@@ -1,5 +1,0 @@
-/home/xia/Projects/API/dobble/build/CMakeFiles/rebuild_cache.dir
-/home/xia/Projects/API/dobble/build/CMakeFiles/edit_cache.dir
-/home/xia/Projects/API/dobble/build/CMakeFiles/dobble.dir
-/home/xia/Projects/API/dobble/build/CMakeFiles/package_source.dir
-/home/xia/Projects/API/dobble/build/CMakeFiles/package.dir
