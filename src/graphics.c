@@ -52,8 +52,17 @@ void getIconLocationInMatrix(int iconId, int *posX, int *posY)
 	// TODO: Calculer la position de l'icône iconId dans la matrice d'icônes
 	// g.matrixWidth (resp. g.matrixHeight) sont la largeur (resp. hauteur) de la matrice d'icônes, en pixels
 	// Les icônes sont de taille ICON_SIZE (défini dans build/dobble-config.h)
-	*posX = 0;
-	*posY = 0;
+	int nbImageLigne = g.matrixWidth / ICON_SIZE;
+	int nbImageCol = g.matrixHeight / ICON_SIZE;
+	int mul = 0;
+
+	*posX = (iconId % nbImageLigne) * ICON_SIZE;
+
+	while(iconId > nbImageCol){
+		mul ++;
+		iconId = iconId - nbImageCol;
+	}
+	*posY = mul * ICON_SIZE;
 }
 
 /****************** METHODES UTILITAIRES ******************/
