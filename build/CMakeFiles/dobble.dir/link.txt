@@ -1,0 +1,1 @@
+/usr/bin/cc -Wall -Werror  -g  -rdynamic CMakeFiles/dobble.dir/src/graphics.c.o CMakeFiles/dobble.dir/src/dobble.c.o  -o dobble -lm -Wl,-Bstatic -lSDL2main -Wl,-Bdynamic -lSDL2 -lpthread -lSDL2_image -lSDL2_ttf 
