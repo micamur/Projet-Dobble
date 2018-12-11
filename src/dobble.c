@@ -13,7 +13,7 @@
 /// Etat du compte à rebous (lancé/non lancé)
 static bool timerRunning = false;
 
-Deck* deckGlobal;
+Deck deckGlobal;
 
 void printError(Error error) {
 	switch (error) {
@@ -46,7 +46,7 @@ void readCardFile(char* fileName) {
 				printError(INCORRECT_FORMAT);
 			icons[j] = iconId;
 		}
-		initCard(&deckGlobal->cards[i], nbIcons, icons);
+		initCard(&deckGlobal.cards[i], nbIcons, icons);
 	}
 
 	fclose(data);
@@ -65,12 +65,15 @@ void initIcon(Icon* icon, int iconId, double radius, double angle, double rotati
 void initCard(Card* card, int nbIcons, int icons[]) {
 	card->nbIcons = nbIcons;
 	card->icons = malloc(sizeof(Icon)*nbIcons);
+	for(int i=0; i<nbIcons; i++){
+		card->icons[i].iconId = icons[i];
+	}
 }
 
 void initDeck(int nbCards, int nbIcons) {
-	deckGlobal->nbIcons = nbIcons;
-	deckGlobal->nbCards = nbCards;
-	deckGlobal->cards = malloc(sizeof(Card)*nbCards);
+	deckGlobal.nbIcons = nbIcons;
+	deckGlobal.nbCards = nbCards;
+	deckGlobal.cards = malloc(sizeof(Card)*nbCards);
 }
 
 void onMouseMove(int x, int y)
@@ -108,13 +111,13 @@ void renderScene()
 {
 	Card card1;
 	Card card2;
-	int i=rand()%(deckGlobal->nbCards);
-	card1=deckGlobal->cards[i];
+	int i=rand()%(deckGlobal.nbCards);
+	card1=deckGlobal.cards[i];
 	int j;
 	do {
-		j=rand()%(deckGlobal->nbCards);
+		j=rand()%(deckGlobal.nbCards);
 	} while(i==j);
-	card2=deckGlobal->cards[j];
+	card2=deckGlobal.cards[j];
 
 	char title[100];
 
@@ -136,7 +139,7 @@ void renderScene()
 
 	// Affichage des icônes de la carte du haut (régulièrement en cercle)
 	int currentIcon = 0;
-	for (angle = 0.; angle < 360.; angle += 360. / (float)((deckGlobal->nbIcons)-1)){
+	for (angle = 0.; angle < 360.; angle += 360. / (float)((deckGlobal.nbIcons)-1)){
 		rotation = sin(angle) * angle + 120.;
 
 		drawIcon(currentCard, card1.icons[currentIcon].iconId, radius, angle, rotation, scale, &cx, &cy);
@@ -154,7 +157,7 @@ void renderScene()
 
 	// Affichage des icônes de la carte du bas (régulièrement en cercle)
 	currentIcon=0;
-	for (angle = 0.; angle < 360.; angle += 360. / (float)((deckGlobal->nbIcons)-1)){
+	for (angle = 0.; angle < 360.; angle += 360. / (float)((deckGlobal.nbIcons)-1)){
 		rotation = sin(angle) * angle + 70.;
 
 		drawIcon(currentCard, card2.icons[currentIcon].iconId, radius, angle, rotation, scale, NULL, NULL);
@@ -183,7 +186,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	readCardFile(argv[0]);
+	readCardFile("../data/pg22.txt");
 
 	mainLoop();
 
