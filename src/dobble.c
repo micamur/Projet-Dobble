@@ -12,7 +12,7 @@
 /// Etat du compte à rebous (lancé/non lancé)
 static bool timerRunning = false;
 
-Deck* deckGlobal;
+Deck deckGlobal;
 
 void printError(Error error) {
 	switch (error) {
@@ -32,20 +32,31 @@ void readCardFile(char* fileName) {
 
 	int nbCards, nbIcons;
 
-	if (fscanf(data, "%d %d", &nbCards, &nbIcons) != 2)
-		printError(INCORRECT_FORMAT);
+	fscanf(data, "%d %d", &nbCards, &nbIcons);
 
+	// if (fscanf(data, "%d %d", &nbCards, &nbIcons) != 2 || nbCards == 0 || nbIcons == 0) {
+	// if (nbCards == 0 || nbIcons == 0) {
+		// printf("%d %d\n", nbCards, nbIcons);
+		// printError(INCORRECT_FORMAT);
+	// }
 	initDeck(nbCards, nbIcons);
 
 	int icons[nbIcons], iconId;
 
 	for (int i = 0; i < nbCards; i++) {
-		for (int j = 0; j < nbIcons; j++) {
-			if (fscanf(data, "%d", &iconId) != 1)
+		fscanf(data, "\n");
+
+		for (int j = 0; j < nbIcons - 1; j++) {
+			if (fscanf(data, "%d ", &iconId) != 1)
 				printError(INCORRECT_FORMAT);
 			icons[j] = iconId;
 		}
-		initCard(&deckGlobal->cards[i], nbIcons, icons);
+
+		if (fscanf(data, "%d ", &iconId) != 1)
+			printError(INCORRECT_FORMAT);
+		icons[iconId - 1] = iconId;
+
+		initCard(&deckGlobal.cards[i], nbIcons, icons);
 	}
 
 	fclose(data);
@@ -67,9 +78,9 @@ void initCard(Card* card, int nbIcons, int icons[]) {
 }
 
 void initDeck(int nbCards, int nbIcons) {
-	deckGlobal->nbIcons = nbIcons;
-	deckGlobal->nbCards = nbCards;
-	deckGlobal->cards = malloc(sizeof(Card)*nbCards);
+	deckGlobal.nbIcons = nbIcons;
+	deckGlobal.nbCards = nbCards;
+	deckGlobal.cards = malloc(sizeof(Card) * nbCards);
 }
 
 void onMouseMove(int x, int y)
@@ -172,7 +183,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	readCardFile(argv[0]);
+	readCardFile("../data/pg22.txt");
 
 	mainLoop();
 
