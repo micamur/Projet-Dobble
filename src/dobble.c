@@ -51,6 +51,27 @@ void readCardFile(char* fileName) {
 	fclose(data);
 }
 
+void initIcon(Icon* icon, int iconId, double radius, double angle, double rotation, double scale,
+	int center){
+		icon->iconId = iconId;
+		icon->radius = radius;
+		icon->angle = angle;
+		icon->rotation = rotation;
+		icon->scale = scale;
+		icon->center = center;
+	}
+
+	void initCard(Card* card, int nbIcons){
+		card->nbIcons = nbIcons;
+		card->icones = malloc(sizeof(Icon)*nbIcon);
+	}
+
+	void initDeck(Deck* deck, int nbCards, int nbIcons){
+		card->nbIcons = nbIcons;
+		card->nbCards = nbCards;
+		deck->cards = malloc(sizeof(Card)*nbCard);
+	}
+
 void onMouseMove(int x, int y)
 {
 	printf("dobble: Position de la souris: (%3d %3d)\r", x, y);
