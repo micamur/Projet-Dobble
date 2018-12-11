@@ -13,8 +13,47 @@
 /// Etat du compte à rebous (lancé/non lancé)
 static bool timerRunning = false;
 
+Deck* deckGlobal;
+
+void printError(Error error) {
+	switch (error) {
+		case FILE_ABSENT:
+			fprintf(stderr, "Failed to open the file\n");
+		case INCORRECT_FORMAT:
+			fprintf(stderr, "Incorrect file format\n");
+	}
+	exit(error);
+}
+
+void readCardFile(char* fileName) {
+	FILE* data = fopen(fileName, "r");
+
+	if (data == NULL)
+		printError(FILE_ABSENT);
+
+	int nbCards, nbIcons;
+
+	if (fscanf(data, "%d %d", &nbCards, &nbIcons) != 2)
+		printError(INCORRECT_FORMAT);
+
+	initDeck(nbCards, nbIcons);
+
+	int icons[nbIcons], iconId;
+
+	for (int i = 0; i < nbCards; i++) {
+		for (int j = 0; j < nbIcons; j++) {
+			if (fscanf(data, "%d", &iconId) != 1)
+				printError(INCORRECT_FORMAT);
+			icons[j] = iconId;
+		}
+		initCard(&deckGlobal->cards[i], nbIcons, icons);
+	}
+
+	fclose(data);
+}
+
 void initIcon(Icon* icon, int iconId, double radius, double angle, double rotation, double scale,
-              int center){
+	int center) {
 	icon->iconId = iconId;
 	icon->radius = radius;
 	icon->angle = angle;
@@ -23,17 +62,16 @@ void initIcon(Icon* icon, int iconId, double radius, double angle, double rotati
 	icon->center = center;
 }
 
-void initCard(Card* card, int nbIcons, int incons[]){
+void initCard(Card* card, int nbIcons, int icons[]) {
 	card->nbIcons = nbIcons;
 	card->icons = malloc(sizeof(Icon)*nbIcons);
 }
 
-void initDeck(Deck* deck, int nbCards, int nbIcons){
-	deck->nbIcons = nbIcons;
-	deck->nbCards = nbCards;
-	deck->cards = malloc(sizeof(Card)*nbCards);
+void initDeck(int nbCards, int nbIcons) {
+	deckGlobal->nbIcons = nbIcons;
+	deckGlobal->nbCards = nbCards;
+	deckGlobal->cards = malloc(sizeof(Card)*nbCards);
 }
-
 
 void onMouseMove(int x, int y)
 {
@@ -145,11 +183,11 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	readCardFile(argv[0]);
 
 	mainLoop();
 
 	freeGraphics();
-
 
 	return 0;
 }
