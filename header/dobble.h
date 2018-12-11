@@ -1,6 +1,16 @@
 #ifndef DOBBLE_H
 #define DOBBLE_H
 
+typedef enum {
+  FILE_ABSENT;
+  INCORRECT_FORMAT;
+} Error;
+
+/**
+ * Fonction qui
+ */
+void readCardFile(char* fileName);
+
 /**
  * Fonction appelée lors d'un mouvement du curseur de la souris sur la fenêtre.
  * L'origine des coordonnées est le coin supérieur gauche de la fenêtre.
