@@ -12,7 +12,7 @@
 /// Etat du compte à rebous (lancé/non lancé)
 static bool timerRunning = false;
 
-Deck deckGlobal;
+Deck* deckGlobal;
 
 void printError(Error error) {
 	switch (error) {
@@ -35,7 +35,7 @@ void readCardFile(char* fileName) {
 	if (fscanf(data, "%d %d", &nbCards, &nbIcons) != 2)
 		printError(INCORRECT_FORMAT);
 
-	initDeck(*deckGlobal, nbCards, nbIcons);
+	initDeck(nbCards, nbIcons);
 
 	int icons[nbIcons], iconId;
 
@@ -45,32 +45,32 @@ void readCardFile(char* fileName) {
 				printError(INCORRECT_FORMAT);
 			icons[j] = iconId;
 		}
-		initCard(*deckGlobal->cards[i], nbIcons, icons);
+		initCard(&deckGlobal->cards[i], nbIcons, icons);
 	}
 
 	fclose(data);
 }
 
 void initIcon(Icon* icon, int iconId, double radius, double angle, double rotation, double scale,
-	int center){
-		icon->iconId = iconId;
-		icon->radius = radius;
-		icon->angle = angle;
-		icon->rotation = rotation;
-		icon->scale = scale;
-		icon->center = center;
-	}
+	int center) {
+	icon->iconId = iconId;
+	icon->radius = radius;
+	icon->angle = angle;
+	icon->rotation = rotation;
+	icon->scale = scale;
+	icon->center = center;
+}
 
-	void initCard(Card* card, int nbIcons){
-		card->nbIcons = nbIcons;
-		card->icones = malloc(sizeof(Icon)*nbIcon);
-	}
+void initCard(Card* card, int nbIcons, int icons[]) {
+	card->nbIcons = nbIcons;
+	card->icons = malloc(sizeof(Icon)*nbIcons);
+}
 
-	void initDeck(Deck* deck, int nbCards, int nbIcons){
-		card->nbIcons = nbIcons;
-		card->nbCards = nbCards;
-		deck->cards = malloc(sizeof(Card)*nbCard);
-	}
+void initDeck(int nbCards, int nbIcons) {
+	deckGlobal->nbIcons = nbIcons;
+	deckGlobal->nbCards = nbCards;
+	deckGlobal->cards = malloc(sizeof(Card)*nbCards);
+}
 
 void onMouseMove(int x, int y)
 {

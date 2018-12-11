@@ -2,8 +2,8 @@
 #define DOBBLE_H
 
 typedef enum {
-  FILE_ABSENT;
-  INCORRECT_FORMAT;
+  FILE_ABSENT,
+  INCORRECT_FORMAT
 } Error;
 
 /**
@@ -19,24 +19,24 @@ typedef struct {
   double scale; //Facteur d'échelle pour le dessin de l'icône.
   int center; //centre de l'icon
 
-}Icon;
+} Icon;
 
 typedef struct {
   int nbIcons;
   Icon* icons;
-}Card;
+} Card;
 
 typedef struct {
   int nbIcons;
   int nbCards;
   Card* cards;
-}Deck;
+} Deck;
 
 void initIcon();
 
-void initCard(Card* card, int nbIcons);
+void initCard(Card* card, int nbIcons, int icons[]);
 
-void initDeck(Deck* deck, int nbCards, int nbIcons);
+void initDeck(int nbCards, int nbIcons);
 
 /**
  * Fonction appelée lors d'un mouvement du curseur de la souris sur la fenêtre.
