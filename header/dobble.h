@@ -24,7 +24,7 @@ typedef struct {
 
 void initIcon();
 
-void initCard(Card* card, int nbIcons);
+void initCard(Card* card, int nbIcons, int incons[]);
 
 void initDeck(Deck* deck, int nbCards, int nbIcons);
 

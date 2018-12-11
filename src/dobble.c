@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <SDL2/SDL.h>
 
@@ -19,10 +20,10 @@ void initIcon(Icon* icon, int iconId, double radius, double angle, double rotati
 	icon->angle = angle;
 	icon->rotation = rotation;
 	icon->scale = scale;
-	icon->center = center; 
+	icon->center = center;
 }
 
-void initCard(Card* card, int nbIcons){
+void initCard(Card* card, int nbIcons, int incons[]){
 	card->nbIcons = nbIcons;
 	card->icones = malloc(sizeof(Icon)*nbIcon);
 }
@@ -67,6 +68,15 @@ void onTimerTick()
 
 void renderScene()
 {
+	Card card1;
+	Card card2;
+	int i=rand()%(deck->nbCards);
+	card1=deckGlobal->cards[i];
+	do {
+		int i=rand()%(deck->nbCards);
+		card2=deckGlobal->cards[i];
+	} while(card1=card2);
+
 	char title[100];
 
 	// Efface le contenu de la fenêtre
@@ -80,23 +90,23 @@ void renderScene()
 	double angle;
 	double rotation;
 	double scale = 1.;
-	int icon = 0;
 	int cx, cy;
 
 	// Dessin du fond de carte de la carte supérieure
 	drawCardShape(currentCard, 5, 252, 252, 252, 155, 119, 170);
 
 	// Affichage des icônes de la carte du haut (régulièrement en cercle)
-	for (angle = 0.; angle < 360.; angle += 360. / 7.)
+	int currentIcon = 0;
+	for (angle = 0.; angle < 360.; angle += 360. / ((deckGlobal->nbIcons)-1).)
 	{
 		rotation = sin(angle) * angle + 120.;
 
-		drawIcon(currentCard, icon, radius, angle, rotation, scale, &cx, &cy);
-
+		drawIcon(currentCard, card1.icones[currentIcon], radius, angle, rotation, scale, &cx, &cy);
+		currentIcon++;
 		// (cx, cy) est le centre de l'icône placé à l'écran (en pixels)
 	}
 	rotation = 120.;
-	drawIcon(currentCard, 0, 0., angle, rotation, scale, &cx, &cy);
+	drawIcon(currentCard, card1.icones[currentIcon], 0., angle, rotation, scale, &cx, &cy);
 
 	// Dessin de la carte inférieure
 	currentCard = LowerCard;
@@ -105,14 +115,16 @@ void renderScene()
 	drawCardShape(currentCard, 5, 252, 252, 252, 155, 119, 170);
 
 	// Affichage des icônes de la carte du bas (régulièrement en cercle)
-	for (angle = 0.; angle < 360.; angle += 360. / 7.)
+	currentIcon=0;
+	for (angle = 0.; angle < 360.; angle += 360. / ((deckGlobal->nbIcons)-1).)
 	{
 		rotation = sin(angle) * angle + 70.;
 
-		drawIcon(currentCard, 0, radius, angle, rotation, scale, NULL, NULL);
+		drawIcon(currentCard, card2.icones[currentIcon], radius, angle, rotation, scale, NULL, NULL);
+		currentIcon++;
 	}
 	rotation = 70.;
-	drawIcon(currentCard, 0, 0., angle, rotation, scale, NULL, NULL);
+	drawIcon(currentCard, card2.icones[currentIcon], 0., angle, rotation, scale, NULL, NULL);
 
 	// Met au premier plan le résultat des opérations de dessin
 	showWindow();
@@ -121,7 +133,7 @@ void renderScene()
 
 int main(int argc, char **argv)
 {
-
+	srand(time(NULL));
 	if (!initializeGraphics())
 	{
 		printf("dobble: Echec de l'initialisation de la librairie graphique.\n");
