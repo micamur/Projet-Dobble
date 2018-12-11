@@ -25,13 +25,13 @@ void initIcon(Icon* icon, int iconId, double radius, double angle, double rotati
 
 void initCard(Card* card, int nbIcons, int incons[]){
 	card->nbIcons = nbIcons;
-	card->icones = malloc(sizeof(Icon)*nbIcon);
+	card->icons = malloc(sizeof(Icon)*nbIcons);
 }
 
 void initDeck(Deck* deck, int nbCards, int nbIcons){
-	card->nbIcons = nbIcons;
-	card->nbCards = nbCards;
-	deck->cards = malloc(sizeof(Card)*nbCard);
+	deck->nbIcons = nbIcons;
+	deck->nbCards = nbCards;
+	deck->cards = malloc(sizeof(Card)*nbCards);
 }
 
 
@@ -70,12 +70,13 @@ void renderScene()
 {
 	Card card1;
 	Card card2;
-	int i=rand()%(deck->nbCards);
+	int i=rand()%(deckGlobal->nbCards);
 	card1=deckGlobal->cards[i];
+	int j;
 	do {
-		int i=rand()%(deck->nbCards);
-		card2=deckGlobal->cards[i];
-	} while(card1=card2);
+		j=rand()%(deckGlobal->nbCards);
+	} while(i==j);
+	card2=deckGlobal->cards[j];
 
 	char title[100];
 
@@ -97,16 +98,15 @@ void renderScene()
 
 	// Affichage des icônes de la carte du haut (régulièrement en cercle)
 	int currentIcon = 0;
-	for (angle = 0.; angle < 360.; angle += 360. / ((deckGlobal->nbIcons)-1).)
-	{
+	for (angle = 0.; angle < 360.; angle += 360. / (float)((deckGlobal->nbIcons)-1)){
 		rotation = sin(angle) * angle + 120.;
 
-		drawIcon(currentCard, card1.icones[currentIcon], radius, angle, rotation, scale, &cx, &cy);
+		drawIcon(currentCard, card1.icons[currentIcon].iconId, radius, angle, rotation, scale, &cx, &cy);
 		currentIcon++;
 		// (cx, cy) est le centre de l'icône placé à l'écran (en pixels)
 	}
 	rotation = 120.;
-	drawIcon(currentCard, card1.icones[currentIcon], 0., angle, rotation, scale, &cx, &cy);
+	drawIcon(currentCard, card1.icons[currentIcon].iconId, 0., angle, rotation, scale, &cx, &cy);
 
 	// Dessin de la carte inférieure
 	currentCard = LowerCard;
@@ -116,15 +116,14 @@ void renderScene()
 
 	// Affichage des icônes de la carte du bas (régulièrement en cercle)
 	currentIcon=0;
-	for (angle = 0.; angle < 360.; angle += 360. / ((deckGlobal->nbIcons)-1).)
-	{
+	for (angle = 0.; angle < 360.; angle += 360. / (float)((deckGlobal->nbIcons)-1)){
 		rotation = sin(angle) * angle + 70.;
 
-		drawIcon(currentCard, card2.icones[currentIcon], radius, angle, rotation, scale, NULL, NULL);
+		drawIcon(currentCard, card2.icons[currentIcon].iconId, radius, angle, rotation, scale, NULL, NULL);
 		currentIcon++;
 	}
 	rotation = 70.;
-	drawIcon(currentCard, card2.icones[currentIcon], 0., angle, rotation, scale, NULL, NULL);
+	drawIcon(currentCard, card2.icons[currentIcon].iconId, 0., angle, rotation, scale, NULL, NULL);
 
 	// Met au premier plan le résultat des opérations de dessin
 	showWindow();
