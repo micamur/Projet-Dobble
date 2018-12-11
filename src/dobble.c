@@ -12,6 +12,27 @@
 /// Etat du compte à rebous (lancé/non lancé)
 static bool timerRunning = false;
 
+void initIcon(Icon* icon, int iconId, double radius, double angle, double rotation, double scale,
+              int center){
+	icon->iconId = iconId;
+	icon->radius = radius;
+	icon->angle = angle;
+	icon->rotation = rotation;
+	icon->scale = scale;
+	icon->center = center; 
+}
+
+void initCard(Card* card, int nbIcons){
+	card->nbIcons = nbIcons;
+	card->icones = malloc(sizeof(Icon)*nbIcon);
+}
+
+void initDeck(Deck* deck, int nbCards, int nbIcons){
+	card->nbIcons = nbIcons;
+	card->nbCards = nbCards;
+	deck->cards = malloc(sizeof(Card)*nbCard);
+}
+
 
 void onMouseMove(int x, int y)
 {
