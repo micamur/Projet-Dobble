@@ -17,8 +17,8 @@ typedef struct {
   double angle; //Angle entre l'horizontale et la position de dessin de l'icône.
   double rotation; //Angle de rotation de l'icône par rapport à son centre.
   double scale; //Facteur d'échelle pour le dessin de l'icône.
-  int center; //centre de l'icon
-
+  int centerX; //position x du centre de l'icon
+  int centerY; //position y du centre de l'icon
 } Icon;
 
 typedef struct {

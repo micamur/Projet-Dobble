@@ -14,6 +14,8 @@
 static bool timerRunning = false;
 
 Deck deckGlobal;
+Card card1;
+Card card2;
 
 void printError(Error error) {
 	switch (error) {
@@ -55,7 +57,7 @@ void readCardFile(char* fileName) {
 
 		if (fscanf(data, "%d ", &iconId) != 1)
 			printError(INCORRECT_FORMAT);
-		icons[iconId - 1] = iconId;
+		icons[nbIcons - 1] = iconId;
 
 		initCard(&deckGlobal.cards[i], nbIcons, icons);
 	}
@@ -96,20 +98,59 @@ void onMouseMove(int x, int y)
 
 void onMouseClick()
 {
-	printf("\ndobble: Clic de la souris.\n");
 
-	if (timerRunning)
-	{
-		printf("\ndobble: Arrêt du compte à rebours.\n");
-		stopTimer();
-		timerRunning = false;
-	}
-	else
-	{
+	printf("\ndobble: Clic de la souris.\n");
+	if(!timmerRunning){
 		printf("\ndobble: Démarrage du compte à rebours.\n");
 		startTimer();
 		timerRunning = true;
 	}
+	int clickedIcon;
+	for(int i =0;  i<card1.nbIcons; i++){
+		for(int j=0; j<card2.nbIcons; j++){
+				if(card1.icons[i].iconId == card2.icons[j].iconId){
+					clickedIcon = card1.icons[i].iconId;
+				}
+		}
+	}
+
+	int mouseX = event.motion.x;
+	int mouseY = event.motion.y;
+	int centerY;
+	int centerX;
+	int scale;
+	int distance;
+	for(int i = 0; i<deckGlobal.nbIcons; i++){
+		centerY = card1.icons[i].centerY;
+		centerX = card1.icons[i].centerX;
+		scale = card1.icons[i].scale;
+		distance = sqrt((mouseX - centerX)*(mouseX - centerX) + (mouseY - centerY)*(mouseY - centerY));
+		if(distance <= scale/2){
+			//le joueur a cliquer sur un icon
+			if(card1.icons[i].iconId==clickedIcon){
+				//le joueur a cliquer sur le bon icon
+
+
+			}
+
+		}
+	}
+	//Si le joueur n'a cliquer sur aucun icone
+
+	// if (timerRunning)
+	// {
+	// 	printf("\ndobble: Arrêt du compte à rebours.\n");
+	// 	stopTimer();
+	// 	timerRunning = false;
+	// }
+	// else
+	// {
+	// 	printf("\ndobble: Démarrage du compte à rebours.\n");
+	// 	startTimer();
+	// 	timerRunning = true;
+	//}
+
+
 }
 
 void onTimerTick()
@@ -120,14 +161,14 @@ void onTimerTick()
 
 void renderScene()
 {
-	Card card1;
-	Card card2;
-	int i=rand()%(deckGlobal.nbCards);
-	card1=deckGlobal.cards[i];
-	int j;
+	int i,j;
+	do{
+		 i=rand()%(deckGlobal.nbCards);
+	}while(deckGlobal.cards[i]==card1 || deckGlobal.cards[i]==card2);
 	do {
 		j=rand()%(deckGlobal.nbCards);
-	} while(i==j);
+	} while(i==j || deckGlobal.cards[j]==card1 || deckGlobal.cards[i]==card2);
+	card1=deckGlobal.cards[i];
 	card2=deckGlobal.cards[j];
 
 	char title[100];
@@ -197,6 +238,9 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	int tab[0];
+	init(&card1, 0, tab);//initialisation de card1 vide
+	init(&card1, 0, tab);//initialisation de card2 vide
 	readCardFile("../data/pg22.txt");
 
 	mainLoop();
