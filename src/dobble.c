@@ -132,7 +132,7 @@ void onMouseClick(int mouseX, int mouseY)
 				//le joueur a cliquer sur le bon icon
 
 
-			}
+			} 
 
 		}
 	}

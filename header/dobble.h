@@ -32,7 +32,7 @@ typedef struct {
   Card* cards;
 } Deck;
 
-void initIcon();
+void initIcon(); 
 
 void initCard(Card* card, int nbIcons, int icons[]);
 

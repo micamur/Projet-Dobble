@@ -475,7 +475,7 @@ int initializeGraphics()
 	// Initialisation du générateur de nombres aléatoires
 	srand(SDL_GetTicks());
 
-	// Enregistrement de l'évènement de timer
+	// Enregistrement de l'évènement de timer 
 	g.userTimerEvent = SDL_RegisterEvents(1);
 
 	return 1;
