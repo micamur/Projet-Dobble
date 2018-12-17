@@ -66,13 +66,14 @@ void readCardFile(char* fileName) {
 }
 
 void initIcon(Icon* icon, int iconId, double radius, double angle, double rotation, double scale,
-	int center) {
+	int centerX, int centerY) {
 	icon->iconId = iconId;
 	icon->radius = radius;
 	icon->angle = angle;
 	icon->rotation = rotation;
 	icon->scale = scale;
-	icon->center = center;
+	icon->centerX = centerX;
+	icon->centerY = centerY;
 }
 
 void initCard(Card* card, int nbIcons, int icons[]) {
@@ -96,11 +97,11 @@ void onMouseMove(int x, int y)
 }
 
 
-void onMouseClick()
+void onMouseClick(int mouseX, int mouseY)
 {
 
 	printf("\ndobble: Clic de la souris.\n");
-	if(!timmerRunning){
+	if(!timerRunning){
 		printf("\ndobble: Démarrage du compte à rebours.\n");
 		startTimer();
 		timerRunning = true;
@@ -114,8 +115,8 @@ void onMouseClick()
 		}
 	}
 
-	int mouseX = event.motion.x;
-	int mouseY = event.motion.y;
+	// int mouseX = event.motion.x;
+	// int mouseY = event.motion.y;
 	int centerY;
 	int centerX;
 	int scale;
@@ -164,10 +165,10 @@ void renderScene()
 	int i,j;
 	do{
 		 i=rand()%(deckGlobal.nbCards);
-	}while(deckGlobal.cards[i]==card1 || deckGlobal.cards[i]==card2);
+	}while(deckGlobal.cards[i].icons==card1.icons || deckGlobal.cards[i].icons==card2.icons);
 	do {
 		j=rand()%(deckGlobal.nbCards);
-	} while(i==j || deckGlobal.cards[j]==card1 || deckGlobal.cards[i]==card2);
+	} while(i==j || deckGlobal.cards[j].icons==card1.icons || deckGlobal.cards[i].icons==card2.icons);
 	card1=deckGlobal.cards[i];
 	card2=deckGlobal.cards[j];
 
@@ -239,8 +240,8 @@ int main(int argc, char **argv)
 	}
 
 	int tab[0];
-	init(&card1, 0, tab);//initialisation de card1 vide
-	init(&card1, 0, tab);//initialisation de card2 vide
+	initCard(&card1, 0, tab);//initialisation de card1 vide
+	initCard(&card1, 0, tab);//initialisation de card2 vide
 	readCardFile("../data/pg22.txt");
 
 	mainLoop();

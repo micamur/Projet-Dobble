@@ -50,7 +50,7 @@ void onMouseMove(int x, int y);
 /**
  * Fonction appelée lorsqu'un bouton de la souris est enfoncé.
  */
-void onMouseClick();
+void onMouseClick(int mouseX, int mouseY);
 
 /**
  * Fonction appelée chaque seconde par le compte à rebours lorsque celui-ci est

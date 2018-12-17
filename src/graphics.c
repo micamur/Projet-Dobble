@@ -497,7 +497,7 @@ void mainLoop()
 			onMouseMove(event.motion.x, event.motion.y);
 			break;
 		case SDL_MOUSEBUTTONDOWN:
-			onMouseClick();
+			onMouseClick(event.motion.x, event.motion.y);
 			break;
 		case SDL_WINDOWEVENT:
 			g.redrawRequested = true;
