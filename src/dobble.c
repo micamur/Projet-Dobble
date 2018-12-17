@@ -13,6 +13,8 @@
 /// Etat du compte à rebous (lancé/non lancé)
 static bool timerRunning = false;
 
+int timeGlobal;
+int scoreGlobal;
 Deck deckGlobal;
 Card card1;
 Card card2;
@@ -21,8 +23,10 @@ void printError(Error error) {
   switch (error) {
   case FILE_ABSENT:
     fprintf(stderr, "Failed to open the file\n");
+    break;
   case INCORRECT_FORMAT:
     fprintf(stderr, "Incorrect file format\n");
+    break;
   }
   exit(error);
 }
@@ -42,36 +46,30 @@ void initCard(Card *card, int nbIcons, int icons[]) {
 }
 
 void readCardFile(char *fileName) {
+  // Open the card file in read-only mode
   FILE *data = fopen(fileName, "r");
 
+  // Check if the opening was successful
   if (data == NULL)
     printError(FILE_ABSENT);
 
+  // Check if the format is correct while reading the first line
   int nbCards, nbIcons;
-
-  fscanf(data, "%d %d", &nbCards, &nbIcons);
-
-  // if (fscanf(data, "%d %d", &nbCards, &nbIcons) != 2 || nbCards == 0 ||
-  // nbIcons == 0) { if (nbCards == 0 || nbIcons == 0) { printf("%d %d\n",
-  // nbCards, nbIcons); printError(INCORRECT_FORMAT);
-  // }
+  if (fscanf(data, "%d %d", &nbCards, &nbIcons) != 2 || nbCards == 0 ||
+      nbIcons == 0) {
+    printf("%d %d\n", nbCards, nbIcons);
+    printError(INCORRECT_FORMAT);
+  }
   initDeck(nbCards, nbIcons);
 
+  // Check is the format es correct while reading each card / line
   int icons[nbIcons], iconId;
-
   for (int i = 0; i < nbCards; i++) {
-    fscanf(data, "\n");
-
-    for (int j = 0; j < nbIcons - 1; j++) {
-      if (fscanf(data, "%d ", &iconId) != 1)
+    for (int j = 0; j < nbIcons; j++) {
+      if (fscanf(data, "%d", &iconId) != 1)
         printError(INCORRECT_FORMAT);
       icons[j] = iconId;
     }
-
-    if (fscanf(data, "%d ", &iconId) != 1)
-      printError(INCORRECT_FORMAT);
-    icons[nbIcons - 1] = iconId;
-
     initCard(&deckGlobal.cards[i], nbIcons, icons);
   }
 
@@ -80,16 +78,18 @@ void readCardFile(char *fileName) {
 
 void initIcon(Icon *icon, double angle) {
   icon->angle = angle;
-  icon->rotation = rand() % 360;          // random between 0 and 360
-  icon->scale = (rand() % 7) * 0.1 + 0.6; // random between 0.6 and 1.3
+  icon->rotation = rand() % 360;          // random between 0 and 359
+  icon->scale = (rand() % 7) * 0.1 + 0.6; // random between 0.6 and 1.2
   icon->radius =
-      CARD_RADIUS * (0.5 + (rand() % 3) * 0.1); // random between 0.5 and 0.8
+      CARD_RADIUS * (0.5 + (rand() % 3) * 0.1); // random between 0.5 and 0.7
 }
 
 void initCardIcons(Card currentCard) {
   int currentIcon = 0;
-  int angleOffset = rand() % 360;
-  for (int angle = 0; angle < 360; angle += 360 / ((deckGlobal.nbIcons) - 1)) {
+  int angleOffset = rand() % 360; // random between 0 and 359
+
+  // Placement des icônes en cercle (régulièrement)
+  for (int angle = 0; angle < 360; angle += 360 / (deckGlobal.nbIcons - 1)) {
     initIcon(&currentCard.icons[currentIcon], (angle + angleOffset) % 360);
     currentIcon++;
   }
@@ -112,70 +112,73 @@ void onMouseClick(int mouseX, int mouseY) {
     startTimer();
     timerRunning = true;
   }
-  int clickedIcon;
-  for (int i = 0; i < card1.nbIcons; i++) {
-    for (int j = 0; j < card2.nbIcons; j++) {
-      if (card1.icons[i].iconId == card2.icons[j].iconId) {
-        clickedIcon = card1.icons[i].iconId;
-      }
+
+  // Identification de l'icône identique aux deux cartes
+  int identicalIconId;
+  for (int i = 0; i < card1.nbIcons; i++)
+    for (int j = 0; j < card2.nbIcons; j++)
+      if (card1.icons[i].iconId == card2.icons[j].iconId)
+        identicalIconId = card1.icons[i].iconId;
+
+  // Vérification de l'icône cliqué
+  bool iconClickedIsCorrect = false;
+
+  // Calcul de la distance entre le clic et chacun des icônes
+  for (int i = 0; i < deckGlobal.nbIcons; i++) {
+    int centerY = card1.icons[i].centerY;
+    int centerX = card1.icons[i].centerX;
+    int scale = card1.icons[i].scale;
+    int distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                        (mouseY - centerY) * (mouseY - centerY));
+    // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
+    // son score
+    if (distance <= scale / 2 && card1.icons[i].iconId == identicalIconId) {
+      scoreGlobal++;
+      timeGlobal += 3;
+      iconClickedIsCorrect = true;
     }
   }
 
-  int centerY;
-  int centerX;
-  int scale;
-  int distance;
-  for (int i = 0; i < deckGlobal.nbIcons; i++) {
-    centerY = card1.icons[i].centerY;
-    centerX = card1.icons[i].centerX;
-    scale = card1.icons[i].scale;
-    distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                    (mouseY - centerY) * (mouseY - centerY));
-    if (distance <= scale / 2) {
-      // le joueur a cliquer sur un icon
-      if (card1.icons[i].iconId == clickedIcon) {
-        // le joueur a cliquer sur le bon icon
-      }
-    }
-  }
+  // Si le joueur n'a pas cliqué sur le bon icône on perd du temps
+  if (!iconClickedIsCorrect)
+    timeGlobal -= 3;
+
+  // Quoi qu'il arive, après avoir cliqué on change de cartes
   changeCards();
   renderScene();
-  // Si le joueur n'a cliquer sur aucun icone
-
-  // if (timerRunning)
-  // {
-  // 	printf("\ndobble: Arrêt du compte à rebours.\n");
-  // 	stopTimer();
-  // 	timerRunning = false;
-  // }
-  // else
-  // {
-  // 	printf("\ndobble: Démarrage du compte à rebours.\n");
-  // 	startTimer();
-  // 	timerRunning = true;
-  //}
 }
 
-void onTimerTick() { printf("\ndobble: Tic du compte à rebours\n"); }
+void onTimerTick() {
+  printf("\ndobble: Tic du compte à rebours\n");
+  timeGlobal--;
+  renderScene();
+}
 
 void changeCards() {
   int i, j;
+
+  // Sélection d'un indice pour card1 différent de ceux des cartes précédentes
   do {
     i = rand() % (deckGlobal.nbCards);
   } while (deckGlobal.cards[i].icons == card1.icons ||
            deckGlobal.cards[i].icons == card2.icons);
+
+  // Sélection d'un indice pour card2 différent de ceux des cartes précédentes
+  // et de celui de card1
   do {
     j = rand() % (deckGlobal.nbCards);
   } while (deckGlobal.cards[j].icons == card1.icons ||
            deckGlobal.cards[i].icons == card2.icons || i == j);
-  card1 = deckGlobal.cards[i];
-  card2 = deckGlobal.cards[j];
 
+  // Mise à jour de card1 et card2 en fonction des nouveaux indices
+  card1 = deckGlobal.cards[i];
   initCardIcons(card1);
+  card2 = deckGlobal.cards[j];
   initCardIcons(card2);
 }
 
 void shuffle(Icon *elems, int nbElems) {
+  // On échange des éléments aléatoirement
   for (int i = nbElems - 1; i > 0; i--) {
     int j = rand() % i;
     Icon tmp = elems[i];
@@ -190,7 +193,7 @@ void drawCard(CardPosition currentCardPosition, Card currentCard) {
   // Dessin du fond de carte de la carte courante
   drawCardShape(currentCardPosition, 5, 252, 252, 252, 155, 119, 170);
 
-  // Shuffle the icons
+  // Mélange des icônes
   shuffle(currentCard.icons, deckGlobal.nbIcons);
 
   // Affichage des icônes de la carte du courante (régulièrement en cercle)
@@ -200,13 +203,22 @@ void drawCard(CardPosition currentCardPosition, Card currentCard) {
 }
 
 void renderScene() {
+  // Condition de fin de jeu
+  if (timeGlobal <= 0) {
+    printf("Score final : %d\nMerci d'avoir joué!\n", scoreGlobal);
+    exit(0);
+  }
+
   char title[100];
 
   // Efface le contenu de la fenêtre
   clearWindow();
-  // Crée le titre qui sera affiché. Utile pour afficher le score.
-  sprintf(title, "RICM3-Dobble    Score %d", 100);
+
+  // Crée le texte qui sera affiché avec le titre, le score et le temps restant
+  sprintf(title, "Velphy-Dobble    Score %d", scoreGlobal);
   drawText(title, WIN_WIDTH / 2, 0, Center, Top);
+  sprintf(title, "Temps restant %d", timeGlobal);
+  drawText(title, WIN_WIDTH / 2, 1.2 * FONT_SIZE, Center, Top);
 
   // Dessin de la carte supérieure et de la carte inférieure
   drawCard(UpperCard, card1);
@@ -229,12 +241,16 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  int tab[0];
-  initCard(&card1, 0, tab); // initialisation de card1 vide
-  initCard(&card1, 0, tab); // initialisation de card2 vide
+  // Lecture du fichier de cartes
   readCardFile("../data/pg23.txt");
 
+  // Sélection de deux cartes aléatoires
   changeCards();
+
+  // Initialisation du temps et du score
+  timeGlobal = 100;
+  scoreGlobal = 0;
+
   mainLoop();
 
   freeGraphics();
