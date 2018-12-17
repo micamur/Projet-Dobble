@@ -2,8 +2,8 @@
 #define DOBBLE_H
 
 typedef enum {
-  FILE_ABSENT,
-  INCORRECT_FORMAT
+        FILE_ABSENT,
+        INCORRECT_FORMAT
 } Error;
 
 /**
@@ -12,27 +12,27 @@ typedef enum {
 void readCardFile(char* fileName);
 
 typedef struct {
-  int iconId; //Numero de l'icon
-  double radius; //Distance entre le centre de la carte et le centre de dessin de l'icône.
-  double angle; //Angle entre l'horizontale et la position de dessin de l'icône.
-  double rotation; //Angle de rotation de l'icône par rapport à son centre.
-  double scale; //Facteur d'échelle pour le dessin de l'icône.
-  int centerX; //position x du centre de l'icon
-  int centerY; //position y du centre de l'icon
+        int iconId; //Numero de l'icon
+        double radius; //Distance entre le centre de la carte et le centre de dessin de l'icône.
+        double angle; //Angle entre l'horizontale et la position de dessin de l'icône.
+        double rotation; //Angle de rotation de l'icône par rapport à son centre.
+        double scale; //Facteur d'échelle pour le dessin de l'icône.
+        int centerX; //position x du centre de l'icon
+        int centerY; //position y du centre de l'icon
 } Icon;
 
 typedef struct {
-  int nbIcons;
-  Icon* icons;
+        int nbIcons;
+        Icon* icons;
 } Card;
 
 typedef struct {
-  int nbIcons;
-  int nbCards;
-  Card* cards;
+        int nbIcons;
+        int nbCards;
+        Card* cards;
 } Deck;
 
-void initIcon(); 
+void initIcon();
 
 void initCard(Card* card, int nbIcons, int icons[]);
 
