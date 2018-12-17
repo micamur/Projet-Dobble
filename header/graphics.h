@@ -1,6 +1,8 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#include "dobble.h"
+
 typedef enum { UpperCard,
 	       LowerCard } CardPosition;
 
@@ -168,8 +170,7 @@ void drawCardShape(CardPosition card, int w, Uint8 bgr, Uint8 bgg, Uint8 bgb, Ui
  * @param centerY   Si différent de NULL, pointeur vers la variable qui
  *                  recevra le centre calculé du dessin de l'icône (Y).
  */
-void drawIcon(CardPosition card, int iconId, double radius, double angle, double rotation, double scale,
-              int *centerX, int *centerY);
+void drawIcon(CardPosition cardPos, Icon icon, int *centerX, int *centerY);
 
 /****************** METHODES DE GESTION DU CYCLE DE VIE ******************/
 
