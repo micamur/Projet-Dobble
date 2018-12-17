@@ -191,14 +191,7 @@ void drawCard(CardPosition currentCardPosition, Card currentCard) {
   drawCardShape(currentCardPosition, 5, 252, 252, 252, 155, 119, 170);
 
   // Shuffle the icons
-  printf("Before : ");
-  for (int i = 0; i < deckGlobal.nbIcons; i++)
-    printf("%d ", currentCard.icons[i].iconId);
-  printf("\nAfter : ");
   shuffle(currentCard.icons, deckGlobal.nbIcons);
-  for (int i = 0; i < deckGlobal.nbIcons; i++)
-    printf("%d ", currentCard.icons[i].iconId);
-  printf("\n");
 
   // Affichage des icônes de la carte du courante (régulièrement en cercle)
   for (int currentIcon = 0; currentIcon < deckGlobal.nbIcons; currentIcon++)

@@ -451,14 +451,18 @@ void mainLoop() {
   while (!quit) {
     SDL_WaitEvent(&event);
 
-    if (event.type == SDL_MOUSEMOTION)
+    switch (event.type) {
+    case SDL_MOUSEMOTION:
       // Rajouter ici le test "souris sur un pixel non transparent"
       onMouseMove(event.motion.x, event.motion.y);
-    if (event.type == SDL_MOUSEBUTTONDOWN)
+      break;
+    case SDL_MOUSEBUTTONDOWN:
       onMouseClick(event.motion.x, event.motion.y);
-    if (event.type == SDL_WINDOWEVENT)
+      break;
+    case SDL_WINDOWEVENT:
       g.redrawRequested = true;
-    if (event.type == SDL_USEREVENT) {
+      break;
+    case SDL_USEREVENT:
       if (event.user.type == g.userTimerEvent) {
         // Appel de la procédure onTimerTick déclarée dans dobble.h
         // et implémentée dans dobble.c
@@ -470,10 +474,11 @@ void mainLoop() {
 
         method(param);
       }
-    }
-    if (event.type == SDL_QUIT) {
+      break;
+    case SDL_QUIT:
       printf("Merci d'avoir joué!\n");
       quit = 1;
+      break;
     }
 
     if (g.redrawRequested) {
