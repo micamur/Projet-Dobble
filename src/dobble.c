@@ -35,7 +35,6 @@ void initDeck(int nbCards, int nbIcons) {
 }
 
 void initCard(Card *card, int nbIcons, int icons[]) {
-  card->nbIcons = nbIcons;
   card->icons = (Icon *)malloc(sizeof(Icon) * nbIcons);
   for (int i = 0; i < nbIcons; i++) {
     card->icons[i].iconId = icons[i];
@@ -116,8 +115,8 @@ void onMouseClick(int mouseX, int mouseY) {
 
   // Identification de l'icône identique aux deux cartes
   int identicalIconId;
-  for (int i = 0; i < cardUpperGlobal.nbIcons; i++)
-    for (int j = 0; j < cardLowerGlobal.nbIcons; j++)
+  for (int i = 0; i < deckGlobal.nbIcons; i++)
+    for (int j = 0; j < deckGlobal.nbIcons; j++)
       if (cardUpperGlobal.icons[i].iconId == cardLowerGlobal.icons[j].iconId)
         identicalIconId = cardUpperGlobal.icons[i].iconId;
 

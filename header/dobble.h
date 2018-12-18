@@ -17,7 +17,6 @@ typedef struct {
 } Icon;
 
 typedef struct {
-  int nbIcons;
   Icon* icons;
 } Card;
 
