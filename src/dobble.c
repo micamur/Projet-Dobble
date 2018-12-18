@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
   }
 
   // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1) {
-  if (loadIconMatrix(DATA_DIRECTORY "/Hearts_8x10_90x90pixels.png") != 1) {
+  if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
     printf("dobble: Echec du chargement des icônes.\n");
     return -1;
   }
