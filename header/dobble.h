@@ -6,6 +6,12 @@ typedef enum {
   INCORRECT_FORMAT
 } Error;
 
+typedef enum {
+  CORRECT,
+  INCORRECT,
+  INDEFINI
+} Resultat;
+
 typedef struct {
   int iconId;       // Numéro de l'icône.
   double radius;    // Distance entre le centre de la carte et le centre de dessin de l'icône.
@@ -95,7 +101,7 @@ void onMouseMove(int x, int y);
 /**
  * Fonction appelée lorsqu'un bouton de la souris est enfoncé.
  */
-void onMouseClick(int mouseX, int mouseY);
+Resultat onMouseClick(int mouseX, int mouseY);
 
 /**
  * Fonction appelée chaque seconde par le compte à rebours lorsque celui-ci est
@@ -139,8 +145,16 @@ void afficheMenuFin();
 
 void afficheStat();
 
-void afficheBouton();
+void afficheBoutonFin();
 
 void ExitBoutonClic(int mouseX, int mouseY);
+
+void afficheMenuDebut();
+
+void afficheOption();
+
+void afficheBoutonDebut();
+
+int EnterBoutonClic(int mouseX, int mouseY);
 
 #endif /*DOBBLE_H*/

@@ -16,7 +16,8 @@ Card cardUpperGlobal, cardLowerGlobal; // Cartes du haut et du bas
 Deck deckGlobal;                       // Deck des cartes du jeu actuel
 int timeGlobal, scoreGlobal, nbFalse;  // Temps restant et score du joueur
 int erreur; // Vaut -1 à si le joueur a fait une erreur, 1 si il a une bonne
-            // réponse 0 sinon
+// réponse 0 sinon
+bool menu; // permet de savoir si le menu a déja été initilisé ou pas
 
 void printError(Error error) {
   switch (error) {
@@ -106,17 +107,26 @@ double dist(double ax, double ay, double bx, double by) {
   return sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
 }
 
-void onMouseClick(int mouseX, int mouseY) {
+Resultat onMouseClick(int mouseX, int mouseY) {
 
   printf("\ndobble: Clic de la souris.\n");
+  // Si le timmer n'est pas enclanché
   if (!timerRunning) {
+    // Initialisation deu menu puis lancement du timmer
+    EnterBoutonClic(mouseX, mouseY);
+    showWindow();
     printf("\ndobble: Démarrage du compte à rebours.\n");
     startTimer();
     timerRunning = true;
+    menu = true;
+    return INDEFINI;
   }
+  // Si le timmer est inferieur ou égal à 0 on gère les clics du menu de fin
   if (timeGlobal <= 0) {
     ExitBoutonClic(mouseX, mouseY);
-  } else {
+  }
+  // Sinon cas normal du mainloop
+  else {
 
     // Identification de l'icône identique aux deux cartes
     int indexOfIdenticalIconUpper;
@@ -132,32 +142,42 @@ void onMouseClick(int mouseX, int mouseY) {
     // Vérification de l'icône cliqué
     bool iconClickedIsCorrect = false;
 
+    // Vérification que le joueur n'a pas cliqué hors de la carte
+    float distance =
+        dist(mouseX, mouseY, (WIN_WIDTH / 2), (4 * FONT_SIZE + CARD_RADIUS));
+    // Si le joueur a cliqué hors de la carte son action n'est pas pris en
+    // compte
+    if (distance > CARD_RADIUS) {
+      return INDEFINI;
+    }
+
     // Calcul de la distance entre le clic et chacun des icônes
     int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
     int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
     float scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
-    float distance = dist(mouseX, mouseY, centerX, centerY);
+    distance = dist(mouseX, mouseY, centerX, centerY);
+
     // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
     // son score
-
     if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
       scoreGlobal++;
       timeGlobal += 3;
       iconClickedIsCorrect = true;
       erreur = 1; // Le joueur a trouvé ne bonne réponse on met erreur à 1
-    }
-
-    // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
-    if (!iconClickedIsCorrect) {
+      changeCards();
+      renderScene();
+      return CORRECT;
+    } else {
+      // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
       erreur = -1; // Le joueur a fait une erreur on met erreur à -1
       timeGlobal -= 3;
       nbFalse++;
+      changeCards();
+      renderScene();
+      return INCORRECT;
     }
-
-    // Quoi qu'il arive, après avoir cliqué on change de cartes
-    changeCards();
-    renderScene();
   }
+  return INDEFINI;
 }
 
 void onTimerTick() {
@@ -237,6 +257,8 @@ void renderScene() {
   if (timeGlobal <= 0) {
     printf("Score final : %d\nMerci d'avoir joué!\n", scoreGlobal);
     afficheMenuFin();
+  } else if (menu == false) {
+    afficheMenuDebut();
   } else {
 
     char title[100];
@@ -262,10 +284,17 @@ void renderScene() {
   }
 }
 
+void afficheMenuDebut() {
+  clearWindow();
+  afficheOption();
+  afficheBoutonDebut();
+  showWindow();
+}
+
 void afficheMenuFin() {
   clearWindow();
   afficheStat();
-  afficheBouton();
+  afficheBoutonFin();
   showWindow();
 }
 
@@ -281,7 +310,16 @@ void afficheStat() {
   drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top);
 }
 
-void afficheBouton() {
+void afficheOption() {
+
+  char title[100];
+  sprintf(title, "Bienvenue sur Dobble !");
+  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+  sprintf(title, "A quelle version voulez-vous jouer ?");
+  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+}
+
+void afficheBoutonFin() {
   char title[100];
   drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
              (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
@@ -294,6 +332,22 @@ void afficheBouton() {
              (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
              (uint8_t)(GENERALCOLOR * 2), 255);
   sprintf(title, "Non");
+  drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center, Middle);
+}
+
+void afficheBoutonDebut() {
+  char title[100];
+  drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 3,
+             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
+             (uint8_t)(GENERALCOLOR * 2), 255);
+
+  sprintf(title, "Coeur");
+  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, Center, Middle);
+
+  drawCircle(WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 3,
+             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
+             (uint8_t)(GENERALCOLOR * 2), 255);
+  sprintf(title, "Flocon");
   drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center, Middle);
 }
 
@@ -318,6 +372,36 @@ void ExitBoutonClic(int mouseX, int mouseY) {
   if (distance <= rayon) {
     freeGraphics();
   }
+}
+
+int EnterBoutonClic(int mouseX, int mouseY) {
+  int centerX = WIN_WIDTH / 2;
+  int centerY = 4 * FONT_SIZE + CARD_RADIUS;
+  float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                        (mouseY - centerY) * (mouseY - centerY));
+  float rayon = ((CARD_RADIUS + 5) / 3);
+  if (distance <= rayon) {
+    printf("Coeur");
+    // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1)
+    // {
+    if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
+      printf("dobble: Echec du chargement des icônes.\n");
+      return -1;
+    }
+    return 1;
+  }
+  centerY = 10 * FONT_SIZE + CARD_RADIUS;
+  distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                  (mouseY - centerY) * (mouseY - centerY));
+  if (distance <= rayon) {
+    printf("Flocon");
+    if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
+      printf("dobble: Echec du chargement des icônes.\n");
+      return -1;
+    }
+    return 1;
+  }
+  return 0;
 }
 
 Card getCardFromPosition(CardPosition cardPos) {
@@ -364,11 +448,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1) {
-  if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
-    printf("dobble: Echec du chargement des icônes.\n");
-    return -1;
-  }
+  menu = false;
 
   // Lecture du fichier de cartes
   char const *cardFileName = "../data/pg28.txt";
