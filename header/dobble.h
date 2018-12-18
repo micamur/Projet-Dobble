@@ -114,7 +114,7 @@ void shuffle(Icon *elems, int nbElems);
  * @param currentCardPosition La position de la carte (haut ou bas)
  * @param currentCard         La carte à dessiner
  */
-void drawCard(CardPosition currentCardPosition, Card currentCard);
+void drawCard(CardPosition currentCardPosition, Card currentCard, int erreur);
 
 /**
  * renderScene calcule ce qui va être affiché ensuite à l'écran. Toutes
@@ -132,5 +132,7 @@ void afficheMenuFin();
 void afficheStat();
 
 void afficheBouton();
+
+void ExitBoutonClic(int mouseX, int mouseY);
 
 #endif /*DOBBLE_H*/

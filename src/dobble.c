@@ -15,6 +15,8 @@ static bool timerRunning = false; // État du compte à rebours (lancé/non lanc
 Card cardUpperGlobal, cardLowerGlobal; // Cartes du haut et du bas
 Deck deckGlobal;                       // Deck des cartes du jeu actuel
 int timeGlobal, scoreGlobal, nbFalse;  // Temps restant et score du joueur
+int erreur; // Vaut -1 à si le joueur a fait une erreur, 1 si il a une bonne
+            // réponse 0 sinon
 
 void printError(Error error) {
   switch (error) {
@@ -109,47 +111,54 @@ void onMouseClick(int mouseX, int mouseY) {
     startTimer();
     timerRunning = true;
   }
+  if (timeGlobal <= 0) {
+    ExitBoutonClic(mouseX, mouseY);
+  } else {
 
-  // Identification de l'icône identique aux deux cartes
-  // int identicalIconId;
-  int indexOfIdenticalIconUpper;
-  for (int i = 0; i < cardUpperGlobal.nbIcons; i++) {
-    for (int j = 0; j < cardLowerGlobal.nbIcons; j++) {
-      if (cardUpperGlobal.icons[i].iconId == cardLowerGlobal.icons[j].iconId) {
-        // identicalIconId = cardUpperGlobal.icons[i].iconId;
-        indexOfIdenticalIconUpper = i;
+    // Identification de l'icône identique aux deux cartes
+    // int identicalIconId;
+    int indexOfIdenticalIconUpper;
+    for (int i = 0; i < cardUpperGlobal.nbIcons; i++) {
+      for (int j = 0; j < cardLowerGlobal.nbIcons; j++) {
+        if (cardUpperGlobal.icons[i].iconId ==
+            cardLowerGlobal.icons[j].iconId) {
+          // identicalIconId = cardUpperGlobal.icons[i].iconId;
+          indexOfIdenticalIconUpper = i;
+        }
       }
     }
+
+    // Vérification de l'icône cliqué
+    bool iconClickedIsCorrect = false;
+
+    // Calcul de la distance entre le clic et l'icônes gagnant
+    int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
+    int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
+    float scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
+    float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                          (mouseY - centerY) * (mouseY - centerY));
+    // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
+    // son score
+    printf("distance : %f, rayon: %f, scale: %f, Icon size: ", distance,
+           (scale * ICON_SIZE) / 2., scale);
+    if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
+      scoreGlobal++;
+      timeGlobal += 3;
+      iconClickedIsCorrect = true;
+      erreur = 1; // Le joueur a trouvé ne bonne réponse on met erreur à 1
+    }
+
+    // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
+    if (!iconClickedIsCorrect) {
+      erreur = -1; // Le joueur a fait une erreur on met erreur à -1
+      timeGlobal -= 3;
+      nbFalse++;
+    }
+
+    // Quoi qu'il arive, après avoir cliqué on change de cartes
+    changeCards();
+    renderScene();
   }
-
-  // Vérification de l'icône cliqué
-  bool iconClickedIsCorrect = false;
-
-  // Calcul de la distance entre le clic et l'icônes gagnant
-  int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
-  int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
-  float scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
-  float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                        (mouseY - centerY) * (mouseY - centerY));
-  // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
-  // son score
-  printf("distance : %f, rayon: %f, scale: %f, Icon size: ", distance,
-         (scale * ICON_SIZE) / 2., scale);
-  if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
-    scoreGlobal++;
-    timeGlobal += 3;
-    iconClickedIsCorrect = true;
-  }
-
-  // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
-  if (!iconClickedIsCorrect) {
-    timeGlobal -= 3;
-    nbFalse++;
-  }
-
-  // Quoi qu'il arive, après avoir cliqué on change de cartes
-  changeCards();
-  renderScene();
 }
 
 void onTimerTick() {
@@ -193,13 +202,25 @@ void shuffle(Icon *elems, int nbElems) {
   }
 }
 
-void drawCard(CardPosition currentCardPosition, Card currentCard) {
+void drawCard(CardPosition currentCardPosition, Card currentCard, int erreur) {
   int cx, cy;
-
   // Dessin du fond de carte de la carte courante (fond clair, bord foncé)
-  drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR,
-                CARDBORDER, CARDBORDER, CARDBORDER);
+  // Le joueur a fait une erreur
+  if (erreur == -1) {
 
+    drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR, 220,
+                  0, 0);
+
+    // Le joueur a trouvé une bonne réponse
+  } else if (erreur == 1) {
+
+    drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR, 0,
+                  200, 0);
+    // cas normal
+  } else {
+    drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR,
+                  CARDBORDER, CARDBORDER, CARDBORDER);
+  }
   // Mélange des icônes
   shuffle(currentCard.icons, deckGlobal.nbIcons);
 
@@ -232,8 +253,10 @@ void renderScene() {
     drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
 
     // Dessin de la carte supérieure et de la carte inférieure
-    drawCard(UpperCard, cardUpperGlobal);
-    drawCard(LowerCard, cardLowerGlobal);
+    drawCard(UpperCard, cardUpperGlobal, erreur);
+    erreur = 0; // on remet erreur à 0 pour que seulement le cercle du haut soit
+                // modifié en cas d'erreur ou de bonne réponse
+    drawCard(LowerCard, cardLowerGlobal, erreur);
 
     // Met au premier plan le résultat des opérations de dessin
     showWindow();
@@ -241,15 +264,10 @@ void renderScene() {
 }
 
 void afficheMenuFin() {
-  printf("yo");
   clearWindow();
-  printf("yo");
   afficheStat();
-  printf("yo");
-  // afficheBouton();
-  printf("yo");
+  afficheBouton();
   showWindow();
-  printf("yo");
 }
 
 void afficheStat() {
@@ -266,16 +284,48 @@ void afficheStat() {
 
 void afficheBouton() {
   char title[100];
-  fillCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, CARD_RADIUS + 5 / 2,
-             GENERALCOLOR, GENERALCOLOR, GENERALCOLOR, 255);
+  drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
+             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
+             (uint8_t)(GENERALCOLOR * 2), 255);
   sprintf(title, "Oui");
-  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Middle);
+  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, Center, Middle);
+
+  drawCircle(WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
+             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
+             (uint8_t)(GENERALCOLOR * 2), 255);
+  sprintf(title, "Non");
+  drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center, Middle);
+}
+
+void ExitBoutonClic(int mouseX, int mouseY) {
+  int centerX = WIN_WIDTH / 2;
+  int centerY = 4 * FONT_SIZE + CARD_RADIUS;
+  float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                        (mouseY - centerY) * (mouseY - centerY));
+  float rayon = ((CARD_RADIUS + 5) / 4);
+  if (distance <= rayon) {
+    // on reprend 2 nouvelles cartes
+    changeCards();
+    // on réinitialise le temps et on conserve le score
+    timeGlobal = 10;
+    erreur = 0; // on remet erreur à 0 pour l'inintialiser normalement
+    // on relance la boucle principale
+    mainLoop();
+  }
+  centerY = 10 * FONT_SIZE + CARD_RADIUS;
+  distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                  (mouseY - centerY) * (mouseY - centerY));
+  if (distance <= rayon) {
+    freeGraphics();
+  }
 }
 
 int main(int argc, char **argv) {
   srand(time(NULL));
 
   nbFalse = 0;
+  erreur = 0; // on initilise erreur à , le joueur n'a pas encore fait d'erreur
+              // ni de bonne réponse
   if (!initializeGraphics()) {
     printf("dobble: Echec de l'initialisation de la librairie graphique.\n");
     return 1;
