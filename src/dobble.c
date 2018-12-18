@@ -6,7 +6,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "dobble-config.h" // change to dobble-config.h.in to make the linter work
+#include "dobble-config.h"
 #include "dobble.h"
 #include "graphics.h"
 
@@ -37,7 +37,6 @@ void initDeck(int nbCards, int nbIcons) {
 }
 
 void initCard(Card *card, int nbIcons, int icons[]) {
-  card->nbIcons = nbIcons;
   card->icons = (Icon *)malloc(sizeof(Icon) * nbIcons);
   for (int i = 0; i < nbIcons; i++) {
     card->icons[i].iconId = icons[i];
@@ -103,6 +102,10 @@ void onMouseMove(int x, int y) {
   fflush(stdout);
 }
 
+double dist(double ax, double ay, double bx, double by) {
+  return sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
+}
+
 void onMouseClick(int mouseX, int mouseY) {
 
   printf("\ndobble: Clic de la souris.\n");
@@ -116,7 +119,6 @@ void onMouseClick(int mouseX, int mouseY) {
   } else {
 
     // Identification de l'icône identique aux deux cartes
-    // int identicalIconId;
     int indexOfIdenticalIconUpper;
     for (int i = 0; i < cardUpperGlobal.nbIcons; i++) {
       for (int j = 0; j < cardLowerGlobal.nbIcons; j++) {
@@ -131,226 +133,265 @@ void onMouseClick(int mouseX, int mouseY) {
     // Vérification de l'icône cliqué
     bool iconClickedIsCorrect = false;
 
-    // Calcul de la distance entre le clic et l'icônes gagnant
-    int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
-    int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
-    float scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
-    float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                          (mouseY - centerY) * (mouseY - centerY));
-    // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
-    // son score
-    printf("distance : %f, rayon: %f, scale: %f, Icon size: ", distance,
-           (scale * ICON_SIZE) / 2., scale);
-    if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
-      scoreGlobal++;
-      timeGlobal += 3;
-      iconClickedIsCorrect = true;
-      erreur = 1; // Le joueur a trouvé ne bonne réponse on met erreur à 1
-    }
+    // Calcul de la distance entre le clic et chacun des icônes
+    for (int i = 0; i < deckGlobal.nbIcons; i++) {
+      int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
+      int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
+      int scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
+      int distance = dist(mouseX, mouseY, centerX, centerY);
+      // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
+      // son score
+      printf("distance : %f, rayon: %f, scale: %f, Icon size: ", distance,
+             (scale * ICON_SIZE) / 2., scale);
+      if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
+        scoreGlobal++;
+        timeGlobal += 3;
+        iconClickedIsCorrect = true;
+        erreur = 1; // Le joueur a trouvé ne bonne réponse on met erreur à 1
+      }
 
-    // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
-    if (!iconClickedIsCorrect) {
-      erreur = -1; // Le joueur a fait une erreur on met erreur à -1
-      timeGlobal -= 3;
-      nbFalse++;
-    }
+      // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
+      if (!iconClickedIsCorrect) {
+        erreur = -1; // Le joueur a fait une erreur on met erreur à -1
+        timeGlobal -= 3;
+        nbFalse++;
+      }
 
-    // Quoi qu'il arive, après avoir cliqué on change de cartes
-    changeCards();
+      // Quoi qu'il arive, après avoir cliqué on change de cartes
+      changeCards();
+      renderScene();
+    }
+  }
+
+  void onTimerTick() {
+    printf("\ndobble: Tic du compte à rebours\n");
+    timeGlobal--;
     renderScene();
   }
-}
 
-void onTimerTick() {
-  printf("\ndobble: Tic du compte à rebours\n");
-  timeGlobal--;
-  renderScene();
-}
+  void changeCards() {
+    int i, j;
 
-void changeCards() {
-  int i, j;
+    // Sélection d'un indice pour cardUpperGlobal différent de ceux des cartes
+    // précédentes
+    do {
+      i = rand() % (deckGlobal.nbCards);
+    } while (deckGlobal.cards[i].icons == cardUpperGlobal.icons ||
+             deckGlobal.cards[i].icons == cardLowerGlobal.icons);
 
-  // Sélection d'un indice pour cardUpperGlobal différent de ceux des cartes
-  // précédentes
-  do {
-    i = rand() % (deckGlobal.nbCards);
-  } while (deckGlobal.cards[i].icons == cardUpperGlobal.icons ||
-           deckGlobal.cards[i].icons == cardLowerGlobal.icons);
+    // Sélection d'un indice pour cardLowerGlobal différent de ceux des cartes
+    // précédentes et de celui de cardUpperGlobal
+    do {
+      j = rand() % (deckGlobal.nbCards);
+    } while (deckGlobal.cards[j].icons == cardUpperGlobal.icons ||
+             deckGlobal.cards[i].icons == cardLowerGlobal.icons || i == j);
 
-  // Sélection d'un indice pour cardLowerGlobal différent de ceux des cartes
-  // précédentes et de celui de cardUpperGlobal
-  do {
-    j = rand() % (deckGlobal.nbCards);
-  } while (deckGlobal.cards[j].icons == cardUpperGlobal.icons ||
-           deckGlobal.cards[i].icons == cardLowerGlobal.icons || i == j);
-
-  // Mise à jour de cardUpperGlobal et cardLowerGlobal en fonction des nouveaux
-  // indices
-  cardUpperGlobal = deckGlobal.cards[i];
-  initCardIcons(cardUpperGlobal);
-  cardLowerGlobal = deckGlobal.cards[j];
-  initCardIcons(cardLowerGlobal);
-}
-
-void shuffle(Icon *elems, int nbElems) {
-  // On échange des éléments aléatoirement
-  for (int i = nbElems - 1; i > 0; i--) {
-    int j = rand() % i;
-    Icon tmp = elems[i];
-    elems[i] = elems[j];
-    elems[j] = tmp;
+    // Mise à jour de cardUpperGlobal et cardLowerGlobal en fonction des
+    // nouveaux indices
+    cardUpperGlobal = deckGlobal.cards[i];
+    initCardIcons(cardUpperGlobal);
+    cardLowerGlobal = deckGlobal.cards[j];
+    initCardIcons(cardLowerGlobal);
   }
-}
 
-void drawCard(CardPosition currentCardPosition, Card currentCard, int erreur) {
-  int cx, cy;
-  // Dessin du fond de carte de la carte courante (fond clair, bord foncé)
-  // Le joueur a fait une erreur
-  if (erreur == -1) {
-
-    drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR, 220,
-                  0, 0);
-
-    // Le joueur a trouvé une bonne réponse
-  } else if (erreur == 1) {
-
-    drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR, 0,
-                  200, 0);
-    // cas normal
-  } else {
-    drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR,
-                  CARDBORDER, CARDBORDER, CARDBORDER);
+  void shuffle(Icon * elems, int nbElems) {
+    // On échange des éléments aléatoirement
+    for (int i = nbElems - 1; i > 0; i--) {
+      int j = rand() % i;
+      Icon tmp = elems[i];
+      elems[i] = elems[j];
+      elems[j] = tmp;
+    }
   }
-  // Mélange des icônes
-  shuffle(currentCard.icons, deckGlobal.nbIcons);
 
-  // Affichage des icônes de la carte du courante (régulièrement en cercle)
-  for (int currentIcon = 0; currentIcon < deckGlobal.nbIcons; currentIcon++) {
-    drawIcon(currentCardPosition, currentCard.icons[currentIcon], &cx, &cy);
-    currentCard.icons[currentIcon].centerX = cx;
-    currentCard.icons[currentIcon].centerY = cy;
+  void drawCard(CardPosition currentCardPosition, Card currentCard,
+                int erreur) {
+    int cx, cy;
+    // Dessin du fond de carte de la carte courante (fond clair, bord foncé)
+    // Le joueur a fait une erreur
+    if (erreur == -1) {
+
+      drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR,
+                    220, 0, 0);
+
+      // Le joueur a trouvé une bonne réponse
+    } else if (erreur == 1) {
+
+      drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR, 0,
+                    200, 0);
+      // cas normal
+    } else {
+      drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR,
+                    CARDBORDER, CARDBORDER, CARDBORDER);
+    }
+    // Mélange des icônes
+    shuffle(currentCard.icons, deckGlobal.nbIcons);
+
+    // Affichage des icônes de la carte du courante (régulièrement en cercle)
+    for (int currentIcon = 0; currentIcon < deckGlobal.nbIcons; currentIcon++) {
+      drawIcon(currentCardPosition, currentCard.icons[currentIcon], &cx, &cy);
+      currentCard.icons[currentIcon].centerX = cx;
+      currentCard.icons[currentIcon].centerY = cy;
+    }
+    // (cx, cy) est le centre de l'icône placé à l'écran (en pixels)
   }
-  // (cx, cy) est le centre de l'icône placé à l'écran (en pixels)
-}
 
-void renderScene() {
-  // Condition de fin de jeu
-  if (timeGlobal <= 0) {
-    printf("Score final : %d\nMerci d'avoir joué!\n", scoreGlobal);
-    afficheMenuFin();
-  } else {
+  void renderScene() {
+    // Condition de fin de jeu
+    if (timeGlobal <= 0) {
+      printf("Score final : %d\nMerci d'avoir joué!\n", scoreGlobal);
+      afficheMenuFin();
+    } else {
 
-    char title[100];
+      char title[100];
 
-    // Efface le contenu de la fenêtre
+      // Efface le contenu de la fenêtre
+      clearWindow();
+
+      // Crée le texte qui sera affiché avec le titre, le score et le temps
+      // restant
+      sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
+      drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+      sprintf(title, "Temps restant : %ds", timeGlobal);
+      drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+
+      // Dessin de la carte supérieure et de la carte inférieure
+      drawCard(UpperCard, cardUpperGlobal, erreur);
+      erreur = 0; // on remet erreur à 0 pour que seulement le cercle du haut
+                  // soit modifié en cas d'erreur ou de bonne réponse
+      drawCard(LowerCard, cardLowerGlobal, erreur);
+
+      // Met au premier plan le résultat des opérations de dessin
+      showWindow();
+    }
+  }
+
+  void afficheMenuFin() {
     clearWindow();
-
-    // Crée le texte qui sera affiché avec le titre, le score et le temps
-    // restant
-    sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
-    drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
-    sprintf(title, "Temps restant : %ds", timeGlobal);
-    drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
-
-    // Dessin de la carte supérieure et de la carte inférieure
-    drawCard(UpperCard, cardUpperGlobal, erreur);
-    erreur = 0; // on remet erreur à 0 pour que seulement le cercle du haut soit
-                // modifié en cas d'erreur ou de bonne réponse
-    drawCard(LowerCard, cardLowerGlobal, erreur);
-
-    // Met au premier plan le résultat des opérations de dessin
+    afficheStat();
+    afficheBouton();
     showWindow();
   }
-}
 
-void afficheMenuFin() {
-  clearWindow();
-  afficheStat();
-  afficheBouton();
-  showWindow();
-}
+  void afficheStat() {
+    char title[100];
+    sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
+    drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+    sprintf(title, "Bravo ! Et merci d'avoir jouer !");
+    drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+    sprintf(title, "Nombre d'erreurs : %d", nbFalse);
+    drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top);
+    sprintf(title, "Voulez-vous rejouer ?");
+    drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top);
+  }
 
-void afficheStat() {
-  char title[100];
-  sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
-  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
-  sprintf(title, "Bravo ! Et merci d'avoir jouer !");
-  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
-  sprintf(title, "Nombre d'erreurs : %d", nbFalse);
-  drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top);
-  sprintf(title, "Voulez-vous rejouer ?");
-  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top);
-}
+  void afficheBouton() {
+    char title[100];
+    drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS,
+               (CARD_RADIUS + 5) / 4, (uint8_t)(GENERALCOLOR * 2),
+               (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2), 255);
+    sprintf(title, "Oui");
+    drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, Center, Middle);
 
-void afficheBouton() {
-  char title[100];
-  drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
-             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
-             (uint8_t)(GENERALCOLOR * 2), 255);
-  sprintf(title, "Oui");
-  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, Center, Middle);
+    drawCircle(WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS,
+               (CARD_RADIUS + 5) / 4, (uint8_t)(GENERALCOLOR * 2),
+               (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2), 255);
+    sprintf(title, "Non");
+    drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center,
+             Middle);
+  }
 
-  drawCircle(WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
-             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
-             (uint8_t)(GENERALCOLOR * 2), 255);
-  sprintf(title, "Non");
-  drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center, Middle);
-}
+  void ExitBoutonClic(int mouseX, int mouseY) {
+    int centerX = WIN_WIDTH / 2;
+    int centerY = 4 * FONT_SIZE + CARD_RADIUS;
+    float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                          (mouseY - centerY) * (mouseY - centerY));
+    float rayon = ((CARD_RADIUS + 5) / 4);
+    if (distance <= rayon) {
+      // on reprend 2 nouvelles cartes
+      changeCards();
+      // on réinitialise le temps et on conserve le score
+      timeGlobal = 10;
+      erreur = 0; // on remet erreur à 0 pour l'inintialiser normalement
+      // on relance la boucle principale
+      mainLoop();
+    }
+    centerY = 10 * FONT_SIZE + CARD_RADIUS;
+    distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                    (mouseY - centerY) * (mouseY - centerY));
+    if (distance <= rayon) {
+      freeGraphics();
+    }
+  }
 
-void ExitBoutonClic(int mouseX, int mouseY) {
-  int centerX = WIN_WIDTH / 2;
-  int centerY = 4 * FONT_SIZE + CARD_RADIUS;
-  float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                        (mouseY - centerY) * (mouseY - centerY));
-  float rayon = ((CARD_RADIUS + 5) / 4);
-  if (distance <= rayon) {
-    // on reprend 2 nouvelles cartes
+  Card getCardFromPosition(CardPosition cardPos) {
+    if (cardPos == UpperCard)
+      return cardUpperGlobal;
+    else
+      return cardLowerGlobal;
+  }
+
+  // void initMovingIcons(CardPosition cardPos, Card card,
+  //                      movingIcon movingIcons[]) {
+  //   int cx, cy;
+  //   initCardIcons(card);
+  //   for (int currentIcon = 0; currentIcon < deckGlobal.nbCards;
+  //   currentIcon++)
+  //   {
+  //     drawIcon(cardPos, card.icons[currentIcon], &cx, &cy);
+  //     movingIcons[currentIcon].px = cx;
+  //     movingIcons[currentIcon].py = cy;
+  //     movingIcons[currentIcon].vx = 0;
+  //     movingIcons[currentIcon].ax = 0;
+  //     movingIcons[currentIcon].vy = 0;
+  //     movingIcons[currentIcon].ay = 0;
+  //   }
+  // }
+
+  // void updateMovingIcons(CardPosition cardPos, movingIcon movingIcons[]) {
+  //   for (int i = 0; i < deckGlobal.nbCards; i++) {
+  //     movingIcons[i].px += movingIcons[i].vx;
+  //     movingIcons[i].py += movingIcons[i].vy;
+  //     movingIcons[i].vx += movingIcons[i].ax;
+  //     movingIcons[i].vy += movingIcons[i].ay;
+  //     Card card = getCardFromPosition(cardPos);
+  //     double dx = fabsf(movingIcons[i].px - card.icons[i].centerX);
+  //     double dy = fabsf(movingIcons[i].py - card.icons[i].centerY);
+  //   }
+  // }
+
+  int main(int argc, char **argv) {
+    srand(time(NULL));
+
+    nbFalse = 0;
+    erreur = 0; // on initilise erreur à , le joueur n'a pas encore fait
+                // d'erreur ni de bonne réponse
+    if (!initializeGraphics()) {
+      printf("dobble: Echec de l'initialisation de la librairie graphique.\n");
+      return 1;
+    }
+
+    // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1) {
+    if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
+      printf("dobble: Echec du chargement des icônes.\n");
+      return -1;
+    }
+
+    // Lecture du fichier de cartes
+    char const *cardFileName = "../data/pg28.txt";
+    readCardFile(cardFileName);
+
+    // Sélection de deux cartes aléatoires
     changeCards();
-    // on réinitialise le temps et on conserve le score
+
+    // Initialisation du temps et du score
     timeGlobal = 10;
-    erreur = 0; // on remet erreur à 0 pour l'inintialiser normalement
-    // on relance la boucle principale
+    scoreGlobal = 0;
+    nbFalse = 0;
+
     mainLoop();
-  }
-  centerY = 10 * FONT_SIZE + CARD_RADIUS;
-  distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                  (mouseY - centerY) * (mouseY - centerY));
-  if (distance <= rayon) {
+
     freeGraphics();
+
+    return 0;
   }
-}
-
-int main(int argc, char **argv) {
-  srand(time(NULL));
-
-  nbFalse = 0;
-  erreur = 0; // on initilise erreur à , le joueur n'a pas encore fait d'erreur
-              // ni de bonne réponse
-  if (!initializeGraphics()) {
-    printf("dobble: Echec de l'initialisation de la librairie graphique.\n");
-    return 1;
-  }
-
-  // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1) {
-  if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
-    printf("dobble: Echec du chargement des icônes.\n");
-    return -1;
-  }
-
-  // Lecture du fichier de cartes
-  char const *cardFileName = "../data/pg23.txt";
-  readCardFile(cardFileName);
-
-  // Sélection de deux cartes aléatoires
-  changeCards();
-
-  // Initialisation du temps et du score
-  timeGlobal = 10;
-  scoreGlobal = 0;
-
-  mainLoop();
-
-  freeGraphics();
-
-  return 0;
-}
