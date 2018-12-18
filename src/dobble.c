@@ -6,7 +6,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "dobble-config.h" // change to dobble-config.h.in to make the linter work
+#include "dobble-config.h"
 #include "dobble.h"
 #include "graphics.h"
 
@@ -14,7 +14,7 @@ static bool timerRunning = false; // État du compte à rebours (lancé/non lanc
 
 Card cardUpperGlobal, cardLowerGlobal; // Cartes du haut et du bas
 Deck deckGlobal;                       // Deck des cartes du jeu actuel
-int timeGlobal, scoreGlobal;           // Temps restant et score du joueur
+int timeGlobal, scoreGlobal, nbFalse;  // Temps restant et score du joueur
 
 void printError(Error error) {
   switch (error) {
@@ -101,6 +101,10 @@ void onMouseMove(int x, int y) {
   fflush(stdout);
 }
 
+double dist(double ax, double ay, double bx, double by) {
+  return sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
+}
+
 void onMouseClick(int mouseX, int mouseY) {
 
   printf("\ndobble: Clic de la souris.\n");
@@ -125,8 +129,7 @@ void onMouseClick(int mouseX, int mouseY) {
     int centerY = cardUpperGlobal.icons[i].centerY;
     int centerX = cardUpperGlobal.icons[i].centerX;
     int scale = cardUpperGlobal.icons[i].scale;
-    int distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                        (mouseY - centerY) * (mouseY - centerY));
+    int distance = dist(mouseX, mouseY, centerX, centerY);
     // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
     // son score
     if (distance <= scale / 2 &&
@@ -138,8 +141,10 @@ void onMouseClick(int mouseX, int mouseY) {
   }
 
   // Si le joueur n'a pas cliqué sur le bon icône on perd du temps
-  if (!iconClickedIsCorrect)
+  if (!iconClickedIsCorrect) {
     timeGlobal -= 3;
+    nbFalse++;
+  }
 
   // Quoi qu'il arive, après avoir cliqué on change de cartes
   changeCards();
@@ -206,7 +211,8 @@ void drawCard(CardPosition currentCardPosition, Card currentCard) {
 void renderScene() {
   // Condition de fin de jeu
   if (timeGlobal <= 0) {
-    printf("Score final : %d\nMerci d'avoir joué!\n", scoreGlobal);
+    printf("Score final : %d\nNombre d'erreurs : %d\nMerci d'avoir joué!\n",
+           scoreGlobal, nbFalse);
     exit(0);
   }
 
@@ -229,6 +235,41 @@ void renderScene() {
   showWindow();
 }
 
+Card getCardFromPosition(CardPosition cardPos) {
+  if (cardPos == UpperCard)
+    return cardUpperGlobal;
+  else
+    return cardLowerGlobal;
+}
+
+// void initMovingIcons(CardPosition cardPos, Card card,
+//                      movingIcon movingIcons[]) {
+//   int cx, cy;
+//   initCardIcons(card);
+//   for (int currentIcon = 0; currentIcon < deckGlobal.nbCards; currentIcon++)
+//   {
+//     drawIcon(cardPos, card.icons[currentIcon], &cx, &cy);
+//     movingIcons[currentIcon].px = cx;
+//     movingIcons[currentIcon].py = cy;
+//     movingIcons[currentIcon].vx = 0;
+//     movingIcons[currentIcon].ax = 0;
+//     movingIcons[currentIcon].vy = 0;
+//     movingIcons[currentIcon].ay = 0;
+//   }
+// }
+
+// void updateMovingIcons(CardPosition cardPos, movingIcon movingIcons[]) {
+//   for (int i = 0; i < deckGlobal.nbCards; i++) {
+//     movingIcons[i].px += movingIcons[i].vx;
+//     movingIcons[i].py += movingIcons[i].vy;
+//     movingIcons[i].vx += movingIcons[i].ax;
+//     movingIcons[i].vy += movingIcons[i].ay;
+//     Card card = getCardFromPosition(cardPos);
+//     double dx = fabsf(movingIcons[i].px - card.icons[i].centerX);
+//     double dy = fabsf(movingIcons[i].py - card.icons[i].centerY);
+//   }
+// }
+
 int main(int argc, char **argv) {
   srand(time(NULL));
 
@@ -238,13 +279,13 @@ int main(int argc, char **argv) {
   }
 
   // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1) {
-  if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
+  if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
     printf("dobble: Echec du chargement des icônes.\n");
     return -1;
   }
 
   // Lecture du fichier de cartes
-  char const *cardFileName = "../data/pg23.txt";
+  char const *cardFileName = "../data/pg28.txt";
   readCardFile(cardFileName);
 
   // Sélection de deux cartes aléatoires
@@ -253,6 +294,7 @@ int main(int argc, char **argv) {
   // Initialisation du temps et du score
   timeGlobal = 100;
   scoreGlobal = 0;
+  nbFalse = 0;
 
   mainLoop();
 

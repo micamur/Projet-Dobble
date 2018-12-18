@@ -2,30 +2,39 @@
 #define DOBBLE_H
 
 typedef enum {
-        FILE_ABSENT,
-        INCORRECT_FORMAT
+  FILE_ABSENT,
+  INCORRECT_FORMAT
 } Error;
 
 typedef struct {
-        int iconId;       // Numéro de l'icône.
-        double radius;    // Distance entre le centre de la carte et le centre de dessin de l'icône.
-        double angle;     // Angle entre l'horizontale et la position de dessin de l'icône.
-        double rotation;  // Angle de rotation de l'icône par rapport à son centre.
-        double scale;     // Facteur d'échelle pour le dessin de l'icône.
-        int centerX;      // Position x du centre de l'icône.
-        int centerY;      // Position y du centre de l'icône.
+  int iconId;       // Numéro de l'icône.
+  double radius;    // Distance entre le centre de la carte et le centre de dessin de l'icône.
+  double angle;     // Angle entre l'horizontale et la position de dessin de l'icône.
+  double rotation;  // Angle de rotation de l'icône par rapport à son centre.
+  double scale;     // Facteur d'échelle pour le dessin de l'icône.
+  int centerX;      // Position x du centre de l'icône.
+  int centerY;      // Position y du centre de l'icône.
 } Icon;
 
 typedef struct {
-        int nbIcons;
-        Icon* icons;
+  int nbIcons;
+  Icon* icons;
 } Card;
 
 typedef struct {
-        int nbIcons;
-        int nbCards;
-        Card* cards;
+  int nbIcons;
+  int nbCards;
+  Card* cards;
 } Deck;
+
+// typedef struct {
+//   float px;
+//   float py;
+//   float vx;
+//   float vy;
+//   float ax;
+//   float ay;
+// } movingIcon;
 
 #include "graphics.h"
 
@@ -34,7 +43,7 @@ typedef struct {
  *
  * @param error Le code d'erreur
  */
-void printError(Error error);
+void printError (Error error);
 
 /**
  * Initialise un deck vide
