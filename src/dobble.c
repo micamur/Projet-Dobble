@@ -190,8 +190,9 @@ void shuffle(Icon *elems, int nbElems) {
 void drawCard(CardPosition currentCardPosition, Card currentCard) {
   int cx, cy;
 
-  // Dessin du fond de carte de la carte courante
-  drawCardShape(currentCardPosition, 5, 252, 252, 252, 155, 119, 170);
+  // Dessin du fond de carte de la carte courante (fond clair, bord foncé)
+  drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR,
+                CARDBORDER, CARDBORDER, CARDBORDER);
 
   // Mélange des icônes
   shuffle(currentCard.icons, deckGlobal.nbIcons);
@@ -215,10 +216,10 @@ void renderScene() {
   clearWindow();
 
   // Crée le texte qui sera affiché avec le titre, le score et le temps restant
-  sprintf(title, "Velphy-Dobble    Score %d", scoreGlobal);
-  drawText(title, WIN_WIDTH / 2, 0, Center, Top);
-  sprintf(title, "Temps restant %d", timeGlobal);
-  drawText(title, WIN_WIDTH / 2, 1.2 * FONT_SIZE, Center, Top);
+  sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
+  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+  sprintf(title, "Temps restant : %ds", timeGlobal);
+  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
 
   // Dessin de la carte supérieure et de la carte inférieure
   drawCard(UpperCard, cardUpperGlobal);

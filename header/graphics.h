@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include "dobble.h"
 
+#define GENERALCOLOR 200
+#define TEXTCOLOR 130
+#define CARDCOLOR 245
+#define CARDBORDER 160
+
 typedef enum { UpperCard,
 	       LowerCard } CardPosition;
 

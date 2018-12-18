@@ -197,7 +197,8 @@ int loadIconMatrix(const char *fileName) {
 /****************** METHODES DE DESSIN ******************/
 
 void clearWindow() {
-  SDL_SetRenderDrawColor(g.renderer, 255, 255, 255, 0);
+  SDL_SetRenderDrawColor(g.renderer, GENERALCOLOR, GENERALCOLOR, GENERALCOLOR,
+                         0); // fond clair
   SDL_RenderClear(g.renderer);
 }
 
@@ -210,10 +211,11 @@ int drawText(const char *message, int x, int y, HAlign hAlign, VAlign vAlign) {
   SDL_Texture *textTexture = NULL;
   int tw, th;
 
-  SDL_Color black = {0, 0, 0}, white = {255, 255, 255};
+  SDL_Color textColor = {TEXTCOLOR, TEXTCOLOR, TEXTCOLOR},
+            textBackground = {GENERALCOLOR, GENERALCOLOR, GENERALCOLOR};
 
-  // Rendu du texte dans une surface
-  text = TTF_RenderUTF8_Shaded(g.font, message, black, white);
+  // Rendu du texte dans une surface (texte foncé, fond clair)
+  text = TTF_RenderUTF8_Shaded(g.font, message, textColor, textBackground);
   tw = text->w;
   th = text->h;
 
@@ -416,7 +418,7 @@ int initializeGraphics() {
   }
 
   // Chargement de la police de caractères
-  g.font = TTF_OpenFont(DATA_DIRECTORY "/FONTS/Chalkduster.ttf", FONT_SIZE);
+  g.font = TTF_OpenFont(DATA_DIRECTORY "/FONTS/Roboto-Medium.ttf", FONT_SIZE);
   if (g.font == NULL) {
     printf("SDL: Echec du chargement de la police de caractères.\n");
     return 0;
