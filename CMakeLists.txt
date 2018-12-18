@@ -4,6 +4,7 @@ project(dobble LANGUAGES C)
 
 # Display Makefile commands
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Debug by default
 set(CMAKE_BUILD_TYPE Debug)
