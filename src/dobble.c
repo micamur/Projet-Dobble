@@ -59,7 +59,7 @@ void readCardFile(char const *fileName) {
   }
   initDeck(nbCards, nbIcons);
 
-  // Check is the format es correct while reading each card / line
+  // Check is the format is correct while reading each card / line
   int icons[nbIcons], iconId;
   for (int i = 0; i < nbCards; i++) {
     for (int j = 0; j < nbIcons; j++) {
@@ -111,35 +111,38 @@ void onMouseClick(int mouseX, int mouseY) {
   }
 
   // Identification de l'icône identique aux deux cartes
-  int identicalIconId;
-  for (int i = 0; i < cardUpperGlobal.nbIcons; i++)
-    for (int j = 0; j < cardLowerGlobal.nbIcons; j++)
-      if (cardUpperGlobal.icons[i].iconId == cardLowerGlobal.icons[j].iconId)
-        identicalIconId = cardUpperGlobal.icons[i].iconId;
+  // int identicalIconId;
+  int indexOfIdenticalIconUpper;
+  for (int i = 0; i < cardUpperGlobal.nbIcons; i++) {
+    for (int j = 0; j < cardLowerGlobal.nbIcons; j++) {
+      if (cardUpperGlobal.icons[i].iconId == cardLowerGlobal.icons[j].iconId) {
+        // identicalIconId = cardUpperGlobal.icons[i].iconId;
+        indexOfIdenticalIconUpper = i;
+      }
+    }
+  }
 
   // Vérification de l'icône cliqué
   bool iconClickedIsCorrect = false;
 
-  // Calcul de la distance entre le clic et chacun des icônes
-  for (int i = 0; i < deckGlobal.nbIcons; i++) {
-    int centerY = cardUpperGlobal.icons[i].centerY;
-    int centerX = cardUpperGlobal.icons[i].centerX;
-    int scale = cardUpperGlobal.icons[i].scale;
-    int distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                        (mouseY - centerY) * (mouseY - centerY));
-    // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
-    // son score
-    if (distance <= scale / 2 &&
-        cardUpperGlobal.icons[i].iconId == identicalIconId) {
-      scoreGlobal++;
-      timeGlobal += 3;
-      iconClickedIsCorrect = true;
-    }
+  // Calcul de la distance entre le clic et l'icônes gagnant
+  int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
+  int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
+  int scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
+  int distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                      (mouseY - centerY) * (mouseY - centerY));
+  // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
+  // son score
+  if (distance <= scale * ICON_SIZE / 2) {
+    scoreGlobal++;
+    timeGlobal += 3;
+    iconClickedIsCorrect = true;
   }
 
-  // Si le joueur n'a pas cliqué sur le bon icône on perd du temps
-  if (!iconClickedIsCorrect)
+  // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
+  if (!iconClickedIsCorrect) {
     timeGlobal -= 3;
+  }
 
   // Quoi qu'il arive, après avoir cliqué on change de cartes
   changeCards();
@@ -198,8 +201,11 @@ void drawCard(CardPosition currentCardPosition, Card currentCard) {
   shuffle(currentCard.icons, deckGlobal.nbIcons);
 
   // Affichage des icônes de la carte du courante (régulièrement en cercle)
-  for (int currentIcon = 0; currentIcon < deckGlobal.nbIcons; currentIcon++)
+  for (int currentIcon = 0; currentIcon < deckGlobal.nbIcons; currentIcon++) {
     drawIcon(currentCardPosition, currentCard.icons[currentIcon], &cx, &cy);
+    currentCard.icons[currentIcon].centerX = cx;
+    currentCard.icons[currentIcon].centerY = cy;
+  }
   // (cx, cy) est le centre de l'icône placé à l'écran (en pixels)
 }
 
