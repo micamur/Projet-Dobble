@@ -15,8 +15,10 @@ static bool timerRunning = false; // État du compte à rebours (lancé/non lanc
 Card cardUpperGlobal, cardLowerGlobal; // Cartes du haut et du bas
 Deck deckGlobal;                       // Deck des cartes du jeu actuel
 int timeGlobal, scoreGlobal, nbFalse;  // Temps restant et score du joueur
-int erreur; // Vaut -1 à si le joueur a fait une erreur, 1 si il a une bonne
-// réponse 0 sinon
+
+Resultat
+    resultatClicGlobal; // Vaut INCORRECT à si le joueur a fait une erreur,
+                        // CORRECT si il a une bonne réponse et INDEFINI sinon
 bool menu; // permet de savoir si le menu a déja été initilisé ou pas
 
 void printError(Error error) {
@@ -160,16 +162,18 @@ Resultat onMouseClick(int mouseX, int mouseY) {
     // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
     // son score
     if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
-      scoreGlobal++;
       timeGlobal += 3;
+      scoreGlobal++;
       iconClickedIsCorrect = true;
-      erreur = 1; // Le joueur a trouvé ne bonne réponse on met erreur à 1
+      resultatClicGlobal = CORRECT; // Le joueur a trouvé une bonne réponse on
+                                    // met le resultat à CORRECT
       changeCards();
       renderScene();
       return CORRECT;
     } else {
       // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
-      erreur = -1; // Le joueur a fait une erreur on met erreur à -1
+      resultatClicGlobal = INCORRECT; //// Le joueur a fait une erreur on met le
+                                      ///resultat à INCORRECT
       timeGlobal -= 3;
       nbFalse++;
       changeCards();
@@ -221,18 +225,17 @@ void shuffle(Icon *elems, int nbElems) {
   }
 }
 
-void drawCard(CardPosition currentCardPosition, Card currentCard, int erreur) {
+void drawCard(CardPosition currentCardPosition, Card currentCard,
+              int resultatClic) {
   int cx, cy;
   // Dessin du fond de carte de la carte courante (fond clair, bord foncé)
   // Le joueur a fait une erreur
-  if (erreur == -1) {
-
+  if (resultatClic == INCORRECT) {
     drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR, 220,
                   0, 0);
 
     // Le joueur a trouvé une bonne réponse
-  } else if (erreur == 1) {
-
+  } else if (resultatClic == CORRECT) {
     drawCardShape(currentCardPosition, 5, CARDCOLOR, CARDCOLOR, CARDCOLOR, 0,
                   200, 0);
     // cas normal
@@ -255,12 +258,10 @@ void drawCard(CardPosition currentCardPosition, Card currentCard, int erreur) {
 void renderScene() {
   // Condition de fin de jeu
   if (timeGlobal <= 0) {
-    printf("Score final : %d\nMerci d'avoir joué!\n", scoreGlobal);
     afficheMenuFin();
   } else if (menu == false) {
     afficheMenuDebut();
   } else {
-
     char title[100];
 
     // Efface le contenu de la fenêtre
@@ -274,10 +275,11 @@ void renderScene() {
     drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
 
     // Dessin de la carte supérieure et de la carte inférieure
-    drawCard(UpperCard, cardUpperGlobal, erreur);
-    erreur = 0; // on remet erreur à 0 pour que seulement le cercle du haut
-                // soit modifié en cas d'erreur ou de bonne réponse
-    drawCard(LowerCard, cardLowerGlobal, erreur);
+    drawCard(UpperCard, cardUpperGlobal, resultatClicGlobal);
+    // on remet erreur à 0 pour que seulement le cercle du
+    // haut soit modifié en cas d'erreur ou de bonne réponse
+    resultatClicGlobal = INDEFINI;
+    drawCard(LowerCard, cardLowerGlobal, resultatClicGlobal);
 
     // Met au premier plan le résultat des opérations de dessin
     showWindow();
@@ -302,9 +304,9 @@ void afficheStat() {
   char title[100];
   sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
   drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
-  sprintf(title, "Bravo ! Et merci d'avoir jouer !");
-  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
   sprintf(title, "Nombre d'erreurs : %d", nbFalse);
+  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+  sprintf(title, "Bravo ! Et merci d'avoir joué !");
   drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top);
   sprintf(title, "Voulez-vous rejouer ?");
   drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top);
@@ -362,15 +364,16 @@ void ExitBoutonClic(int mouseX, int mouseY) {
     changeCards();
     // on réinitialise le temps et on conserve le score
     timeGlobal = 10;
-    erreur = 0; // on remet erreur à 0 pour l'inintialiser normalement
+    // on remet le résultat à INDEFINI pour l'inintialiser normalement
     // on relance la boucle principale
+    resultatClicGlobal = INDEFINI;
     mainLoop();
   }
   centerY = 10 * FONT_SIZE + CARD_RADIUS;
   distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
                   (mouseY - centerY) * (mouseY - centerY));
   if (distance <= rayon) {
-    freeGraphics();
+    exit(0);
   }
 }
 
@@ -451,7 +454,7 @@ int main(int argc, char **argv) {
   menu = false;
 
   // Lecture du fichier de cartes
-  char const *cardFileName = "../data/pg28.txt";
+  char const *cardFileName = "../data/pg24.txt";
   readCardFile(cardFileName);
 
   // Sélection de deux cartes aléatoires
@@ -461,8 +464,8 @@ int main(int argc, char **argv) {
   timeGlobal = 30;
   scoreGlobal = 0;
   nbFalse = 0;
-  erreur = 0; // on initilise erreur à , le joueur n'a pas encore fait
-              // d'erreur ni de bonne réponse
+  resultatClicGlobal = INDEFINI; // on l'initilise à INDEFINI, le joueur n'a pas
+                                 // encore fait d'erreur ni de bonne réponse
 
   mainLoop();
 
