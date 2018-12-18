@@ -24,10 +24,13 @@ bool menu; // permet de savoir si le menu a déja été initilisé ou pas
 void printError(Error error) {
   switch (error) {
   case FILE_ABSENT:
-    fprintf(stderr, "Failed to open the file\n");
+    fprintf(stderr, "Echec à l'ouverture d'un fichier\n");
     break;
   case INCORRECT_FORMAT:
-    fprintf(stderr, "Incorrect file format\n");
+    fprintf(stderr, "Format de fichier incorrect\n");
+    break;
+  case ECHEC_ICONES:
+    fprintf(stderr, "Echec du chargement des icônes.\n");
     break;
   }
   exit(error);
@@ -110,11 +113,11 @@ double dist(double ax, double ay, double bx, double by) {
 }
 
 Resultat onMouseClick(int mouseX, int mouseY) {
-
   printf("\ndobble: Clic de la souris.\n");
-  // Si le timmer n'est pas enclanché
+
+  // Si le timer n'est pas enclanché :
+  // Initialisation du menu puis lancement du timer
   if (!timerRunning) {
-    // Initialisation deu menu puis lancement du timmer
     EnterBoutonClic(mouseX, mouseY);
     showWindow();
     printf("\ndobble: Démarrage du compte à rebours.\n");
@@ -123,13 +126,12 @@ Resultat onMouseClick(int mouseX, int mouseY) {
     menu = true;
     return INDEFINI;
   }
-  // Si le timmer est inferieur ou égal à 0 on gère les clics du menu de fin
+
+  // Si le timer est inferieur ou égal à 0 on gère les clics du menu de fin
+  // Sinon cas normal du mainloop
   if (timeGlobal <= 0) {
     ExitBoutonClic(mouseX, mouseY);
-  }
-  // Sinon cas normal du mainloop
-  else {
-
+  } else {
     // Identification de l'icône identique aux deux cartes
     int indexOfIdenticalIconUpper;
     for (int i = 0; i < deckGlobal.nbIcons; i++) {
@@ -141,40 +143,38 @@ Resultat onMouseClick(int mouseX, int mouseY) {
       }
     }
 
-    // Vérification de l'icône cliqué
+    // Variable booléenne permettant de savoir si on a cliqué sur le bon icône
     bool iconClickedIsCorrect = false;
 
     // Vérification que le joueur n'a pas cliqué hors de la carte
+    // Si le clic est hors de la carte son action n'est pas pris en compte
     float distance =
         dist(mouseX, mouseY, (WIN_WIDTH / 2), (4 * FONT_SIZE + CARD_RADIUS));
-    // Si le joueur a cliqué hors de la carte son action n'est pas pris en
-    // compte
     if (distance > CARD_RADIUS) {
       return INDEFINI;
     }
 
-    // Calcul de la distance entre le clic et chacun des icônes
+    // Calcul de la distance entre le curseur au moment du clic et le bon icône
     int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
     int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
     float scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
     distance = dist(mouseX, mouseY, centerX, centerY);
 
-    // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
-    // son score
+    // Si le joueur a cliqué sur le bon icône il gagne du temps, on augmente
+    // son score et le résultat de son clic est mis à CORRECT
     if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
+      iconClickedIsCorrect = true;
       timeGlobal += 3;
       scoreGlobal++;
-      iconClickedIsCorrect = true;
-      resultatClicGlobal = CORRECT; // Le joueur a trouvé une bonne réponse on
-                                    // met le resultat à CORRECT
+      resultatClicGlobal = CORRECT;
       changeCards();
       renderScene();
       return CORRECT;
     } else {
-      // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
-      resultatClicGlobal = INCORRECT; //// Le joueur a fait une erreur on met le
-                                      ///resultat à INCORRECT
+      // Si le joueur n'a pas cliqué sur le bon icône il perd du temps et le
+      // résultat de son clic est mis à INCORRECT
       timeGlobal -= 3;
+      resultatClicGlobal = INCORRECT;
       nbFalse++;
       changeCards();
       renderScene();
@@ -256,7 +256,7 @@ void drawCard(CardPosition currentCardPosition, Card currentCard,
 }
 
 void renderScene() {
-  // Condition de fin de jeu
+  // Affichage des différents menus ou du jeu
   if (timeGlobal <= 0) {
     afficheMenuFin();
   } else if (menu == false) {
@@ -288,41 +288,47 @@ void renderScene() {
 
 void afficheMenuDebut() {
   clearWindow();
-  afficheOption();
-  afficheBoutonDebut();
+  afficheTitreMenuDebut();
+  afficheBoutonsDebut();
   showWindow();
 }
 
 void afficheMenuFin() {
   clearWindow();
-  afficheStat();
-  afficheBoutonFin();
+  afficheStats();
+  afficheBoutonsFin();
   showWindow();
 }
 
-void afficheStat() {
+void afficheStats() {
   char title[100];
+
   sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
   drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+
   sprintf(title, "Nombre d'erreurs : %d", nbFalse);
   drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+
   sprintf(title, "Bravo ! Et merci d'avoir joué !");
   drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top);
+
   sprintf(title, "Voulez-vous rejouer ?");
   drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top);
 }
 
-void afficheOption() {
-
+void afficheTitreMenuDebut() {
   char title[100];
+
   sprintf(title, "Bienvenue sur Dobble !");
   drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
-  sprintf(title, "A quelle version voulez-vous jouer ?");
+
+  sprintf(title, "À quelle version voulez-vous jouer ?");
   drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
 }
 
-void afficheBoutonFin() {
+void afficheBoutonsFin() {
   char title[100];
+
   drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
              (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
              (uint8_t)(GENERALCOLOR * 2), 255);
@@ -333,78 +339,79 @@ void afficheBoutonFin() {
   drawCircle(WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
              (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
              (uint8_t)(GENERALCOLOR * 2), 255);
+
   sprintf(title, "Non");
   drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center, Middle);
 }
 
-void afficheBoutonDebut() {
+void afficheBoutonsDebut() {
   char title[100];
+
   drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 3,
              (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
              (uint8_t)(GENERALCOLOR * 2), 255);
 
-  sprintf(title, "Coeur");
+  sprintf(title, "Cœur");
   drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, Center, Middle);
 
   drawCircle(WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 3,
              (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
              (uint8_t)(GENERALCOLOR * 2), 255);
+
   sprintf(title, "Flocon");
   drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center, Middle);
 }
 
 void ExitBoutonClic(int mouseX, int mouseY) {
-  int centerX = WIN_WIDTH / 2;
-  int centerY = 4 * FONT_SIZE + CARD_RADIUS;
-  float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                        (mouseY - centerY) * (mouseY - centerY));
   float rayon = ((CARD_RADIUS + 5) / 4);
+  int centerX = WIN_WIDTH / 2;
+
+  // Test si le clic est au niveau du bouton Oui (pour rejouer)
+  int centerY = 4 * FONT_SIZE + CARD_RADIUS;
+  float distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
     // on reprend 2 nouvelles cartes
     changeCards();
     // on réinitialise le temps et on conserve le score
-    timeGlobal = 10;
+    timeGlobal = 30;
     // on remet le résultat à INDEFINI pour l'inintialiser normalement
-    // on relance la boucle principale
     resultatClicGlobal = INDEFINI;
+    // on relance la boucle principale
     mainLoop();
+    // on conserve le score d'une partie à l'autre
   }
+
+  // Test si le clic est au niveau du bouton Non (pour quitter)
   centerY = 10 * FONT_SIZE + CARD_RADIUS;
-  distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                  (mouseY - centerY) * (mouseY - centerY));
+  distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
     exit(0);
   }
 }
 
-int EnterBoutonClic(int mouseX, int mouseY) {
-  int centerX = WIN_WIDTH / 2;
-  int centerY = 4 * FONT_SIZE + CARD_RADIUS;
-  float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                        (mouseY - centerY) * (mouseY - centerY));
+void EnterBoutonClic(int mouseX, int mouseY) {
   float rayon = ((CARD_RADIUS + 5) / 3);
+  int centerX = WIN_WIDTH / 2;
+
+  // Test si le clic est au niveau du bouton Cœur
+  int centerY = 4 * FONT_SIZE + CARD_RADIUS;
+  float distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
-    printf("Coeur");
-    // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1)
-    // {
-    if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
-      printf("dobble: Echec du chargement des icônes.\n");
-      return -1;
-    }
-    return 1;
+    printf("Cœur");
+    if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1)
+      printError(ECHEC_ICONES);
+    return;
   }
+
+  // Test si le clic est au niveau du bouton Flocon
   centerY = 10 * FONT_SIZE + CARD_RADIUS;
-  distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                  (mouseY - centerY) * (mouseY - centerY));
+  distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
     printf("Flocon");
-    if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
-      printf("dobble: Echec du chargement des icônes.\n");
-      return -1;
-    }
-    return 1;
+    if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1)
+      printError(ECHEC_ICONES);
+    return;
   }
-  return 0;
 }
 
 Card getCardFromPosition(CardPosition cardPos) {
@@ -451,8 +458,6 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  menu = false;
-
   // Lecture du fichier de cartes
   char const *cardFileName = "../data/pg24.txt";
   readCardFile(cardFileName);
@@ -460,12 +465,13 @@ int main(int argc, char **argv) {
   // Sélection de deux cartes aléatoires
   changeCards();
 
-  // Initialisation du temps et du score
+  // Initialisation des variables globales
+  menu = false;
   timeGlobal = 30;
   scoreGlobal = 0;
   nbFalse = 0;
-  resultatClicGlobal = INDEFINI; // on l'initilise à INDEFINI, le joueur n'a pas
-                                 // encore fait d'erreur ni de bonne réponse
+  resultatClicGlobal = INDEFINI;
+  // Initilisé à INDEFINI : on n'a encore donné ni bonne ni mauvaise réponse
 
   mainLoop();
 

@@ -3,7 +3,8 @@
 
 typedef enum {
   FILE_ABSENT,
-  INCORRECT_FORMAT
+  INCORRECT_FORMAT,
+  ECHEC_ICONES
 } Error;
 
 typedef enum {
@@ -141,20 +142,44 @@ void drawCard(CardPosition currentCardPosition, Card currentCard, int erreur);
  */
 void renderScene();
 
+/**
+ * Affiche le menu de fin de partie
+ */
 void afficheMenuFin();
 
-void afficheStat();
+/**
+ * Affiche les statistiques de fin de partie (score et nombre d'erreurs)
+ */
+void afficheStats();
 
-void afficheBoutonFin();
+/**
+ * Affiche les boutons du menu de fin de partie (pour rejouer ou quitter)
+ */
+void afficheBoutonsFin();
 
+/**
+ * Évènements déclenchés lors d'un clic sur un bouton du menu de fin
+ */
 void ExitBoutonClic(int mouseX, int mouseY);
 
+/**
+ * Affiche le menu de début de partie
+ */
 void afficheMenuDebut();
 
-void afficheOption();
+/**
+ * Affiche le titre du menu du début
+ */
+void afficheTitreMenuDebut();
 
-void afficheBoutonDebut();
+/**
+ * Affiche les boutons du menu de début de partie (pour sélectionner les icônes)
+ */
+void afficheBoutonsDebut();
 
-int EnterBoutonClic(int mouseX, int mouseY);
+/**
+ * Évènements déclenchés lors d'un clic sur un bouton du menu de début
+ */
+void EnterBoutonClic(int mouseX, int mouseY);
 
 #endif /*DOBBLE_H*/
