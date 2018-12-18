@@ -6,6 +6,12 @@ typedef enum {
   INCORRECT_FORMAT
 } Error;
 
+typedef enum {
+  CORRECT,
+  INCORRECT,
+  INDEFINI
+} Resultat;
+
 typedef struct {
   int iconId;       // Numéro de l'icône.
   double radius;    // Distance entre le centre de la carte et le centre de dessin de l'icône.
