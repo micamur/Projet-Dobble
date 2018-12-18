@@ -14,7 +14,7 @@ static bool timerRunning = false; // État du compte à rebours (lancé/non lanc
 
 Card cardUpperGlobal, cardLowerGlobal; // Cartes du haut et du bas
 Deck deckGlobal;                       // Deck des cartes du jeu actuel
-int timeGlobal, scoreGlobal;           // Temps restant et score du joueur
+int timeGlobal, scoreGlobal, nbFalse;  // Temps restant et score du joueur
 
 void printError(Error error) {
   switch (error) {
@@ -128,12 +128,14 @@ void onMouseClick(int mouseX, int mouseY) {
   // Calcul de la distance entre le clic et l'icônes gagnant
   int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
   int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
-  int scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
-  int distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
-                      (mouseY - centerY) * (mouseY - centerY));
+  float scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
+  float distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
+                        (mouseY - centerY) * (mouseY - centerY));
   // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
   // son score
-  if (distance <= scale * ICON_SIZE / 2) {
+  printf("distance : %f, rayon: %f, scale: %f, Icon size: ", distance,
+         (scale * ICON_SIZE) / 2., scale);
+  if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
     scoreGlobal++;
     timeGlobal += 3;
     iconClickedIsCorrect = true;
@@ -142,6 +144,7 @@ void onMouseClick(int mouseX, int mouseY) {
   // Si le joueur n'a pas cliqué sur le bon icône il perd du temps
   if (!iconClickedIsCorrect) {
     timeGlobal -= 3;
+    nbFalse++;
   }
 
   // Quoi qu'il arive, après avoir cliqué on change de cartes
@@ -213,38 +216,73 @@ void renderScene() {
   // Condition de fin de jeu
   if (timeGlobal <= 0) {
     printf("Score final : %d\nMerci d'avoir joué!\n", scoreGlobal);
-    exit(0);
+    afficheMenuFin();
+  } else {
+
+    char title[100];
+
+    // Efface le contenu de la fenêtre
+    clearWindow();
+
+    // Crée le texte qui sera affiché avec le titre, le score et le temps
+    // restant
+    sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
+    drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+    sprintf(title, "Temps restant : %ds", timeGlobal);
+    drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+
+    // Dessin de la carte supérieure et de la carte inférieure
+    drawCard(UpperCard, cardUpperGlobal);
+    drawCard(LowerCard, cardLowerGlobal);
+
+    // Met au premier plan le résultat des opérations de dessin
+    showWindow();
   }
+}
 
-  char title[100];
-
-  // Efface le contenu de la fenêtre
+void afficheMenuFin() {
+  printf("yo");
   clearWindow();
+  printf("yo");
+  afficheStat();
+  printf("yo");
+  // afficheBouton();
+  printf("yo");
+  showWindow();
+  printf("yo");
+}
 
-  // Crée le texte qui sera affiché avec le titre, le score et le temps restant
+void afficheStat() {
+  char title[100];
   sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
   drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
-  sprintf(title, "Temps restant : %ds", timeGlobal);
+  sprintf(title, "Bravo ! Et merci d'avoir jouer !");
   drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+  sprintf(title, "Nombre d'erreurs : %d", nbFalse);
+  drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top);
+  sprintf(title, "Voulez-vous rejouer ?");
+  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top);
+}
 
-  // Dessin de la carte supérieure et de la carte inférieure
-  drawCard(UpperCard, cardUpperGlobal);
-  drawCard(LowerCard, cardLowerGlobal);
-
-  // Met au premier plan le résultat des opérations de dessin
-  showWindow();
+void afficheBouton() {
+  char title[100];
+  fillCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, CARD_RADIUS + 5 / 2,
+             GENERALCOLOR, GENERALCOLOR, GENERALCOLOR, 255);
+  sprintf(title, "Oui");
+  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Middle);
 }
 
 int main(int argc, char **argv) {
   srand(time(NULL));
 
+  nbFalse = 0;
   if (!initializeGraphics()) {
     printf("dobble: Echec de l'initialisation de la librairie graphique.\n");
     return 1;
   }
 
   // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1) {
-  if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
+  if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
     printf("dobble: Echec du chargement des icônes.\n");
     return -1;
   }
@@ -257,7 +295,7 @@ int main(int argc, char **argv) {
   changeCards();
 
   // Initialisation du temps et du score
-  timeGlobal = 100;
+  timeGlobal = 10;
   scoreGlobal = 0;
 
   mainLoop();

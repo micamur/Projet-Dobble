@@ -127,4 +127,10 @@ void drawCard(CardPosition currentCardPosition, Card currentCard);
  */
 void renderScene();
 
+void afficheMenuFin();
+
+void afficheStat();
+
+void afficheBouton();
+
 #endif /*DOBBLE_H*/
