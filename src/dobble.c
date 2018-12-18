@@ -6,18 +6,15 @@
 
 #include <SDL2/SDL.h>
 
-#include "dobble-config.h"
+#include "dobble-config.h" // change to dobble-config.h.in to make the linter work
 #include "dobble.h"
 #include "graphics.h"
 
-/// Etat du compte à rebous (lancé/non lancé)
-static bool timerRunning = false;
+static bool timerRunning = false; // État du compte à rebours (lancé/non lancé)
 
-int timeGlobal;
-int scoreGlobal;
-Deck deckGlobal;
-Card card1;
-Card card2;
+Card cardUpperGlobal, cardLowerGlobal; // Cartes du haut et du bas
+Deck deckGlobal;                       // Deck des cartes du jeu actuel
+int timeGlobal, scoreGlobal;           // Temps restant et score du joueur
 
 void printError(Error error) {
   switch (error) {
@@ -34,18 +31,18 @@ void printError(Error error) {
 void initDeck(int nbCards, int nbIcons) {
   deckGlobal.nbIcons = nbIcons;
   deckGlobal.nbCards = nbCards;
-  deckGlobal.cards = malloc(sizeof(Card) * nbCards);
+  deckGlobal.cards = (Card *)malloc(sizeof(Card) * nbCards);
 }
 
 void initCard(Card *card, int nbIcons, int icons[]) {
   card->nbIcons = nbIcons;
-  card->icons = malloc(sizeof(Icon) * nbIcons);
+  card->icons = (Icon *)malloc(sizeof(Icon) * nbIcons);
   for (int i = 0; i < nbIcons; i++) {
     card->icons[i].iconId = icons[i];
   }
 }
 
-void readCardFile(char *fileName) {
+void readCardFile(char const *fileName) {
   // Open the card file in read-only mode
   FILE *data = fopen(fileName, "r");
 
@@ -115,24 +112,25 @@ void onMouseClick(int mouseX, int mouseY) {
 
   // Identification de l'icône identique aux deux cartes
   int identicalIconId;
-  for (int i = 0; i < card1.nbIcons; i++)
-    for (int j = 0; j < card2.nbIcons; j++)
-      if (card1.icons[i].iconId == card2.icons[j].iconId)
-        identicalIconId = card1.icons[i].iconId;
+  for (int i = 0; i < cardUpperGlobal.nbIcons; i++)
+    for (int j = 0; j < cardLowerGlobal.nbIcons; j++)
+      if (cardUpperGlobal.icons[i].iconId == cardLowerGlobal.icons[j].iconId)
+        identicalIconId = cardUpperGlobal.icons[i].iconId;
 
   // Vérification de l'icône cliqué
   bool iconClickedIsCorrect = false;
 
   // Calcul de la distance entre le clic et chacun des icônes
   for (int i = 0; i < deckGlobal.nbIcons; i++) {
-    int centerY = card1.icons[i].centerY;
-    int centerX = card1.icons[i].centerX;
-    int scale = card1.icons[i].scale;
+    int centerY = cardUpperGlobal.icons[i].centerY;
+    int centerX = cardUpperGlobal.icons[i].centerX;
+    int scale = cardUpperGlobal.icons[i].scale;
     int distance = sqrt((mouseX - centerX) * (mouseX - centerX) +
                         (mouseY - centerY) * (mouseY - centerY));
     // Si le joueur a cliqué sur le bon icône il gagne du temps et augmente
     // son score
-    if (distance <= scale / 2 && card1.icons[i].iconId == identicalIconId) {
+    if (distance <= scale / 2 &&
+        cardUpperGlobal.icons[i].iconId == identicalIconId) {
       scoreGlobal++;
       timeGlobal += 3;
       iconClickedIsCorrect = true;
@@ -157,24 +155,26 @@ void onTimerTick() {
 void changeCards() {
   int i, j;
 
-  // Sélection d'un indice pour card1 différent de ceux des cartes précédentes
+  // Sélection d'un indice pour cardUpperGlobal différent de ceux des cartes
+  // précédentes
   do {
     i = rand() % (deckGlobal.nbCards);
-  } while (deckGlobal.cards[i].icons == card1.icons ||
-           deckGlobal.cards[i].icons == card2.icons);
+  } while (deckGlobal.cards[i].icons == cardUpperGlobal.icons ||
+           deckGlobal.cards[i].icons == cardLowerGlobal.icons);
 
-  // Sélection d'un indice pour card2 différent de ceux des cartes précédentes
-  // et de celui de card1
+  // Sélection d'un indice pour cardLowerGlobal différent de ceux des cartes
+  // précédentes et de celui de cardUpperGlobal
   do {
     j = rand() % (deckGlobal.nbCards);
-  } while (deckGlobal.cards[j].icons == card1.icons ||
-           deckGlobal.cards[i].icons == card2.icons || i == j);
+  } while (deckGlobal.cards[j].icons == cardUpperGlobal.icons ||
+           deckGlobal.cards[i].icons == cardLowerGlobal.icons || i == j);
 
-  // Mise à jour de card1 et card2 en fonction des nouveaux indices
-  card1 = deckGlobal.cards[i];
-  initCardIcons(card1);
-  card2 = deckGlobal.cards[j];
-  initCardIcons(card2);
+  // Mise à jour de cardUpperGlobal et cardLowerGlobal en fonction des nouveaux
+  // indices
+  cardUpperGlobal = deckGlobal.cards[i];
+  initCardIcons(cardUpperGlobal);
+  cardLowerGlobal = deckGlobal.cards[j];
+  initCardIcons(cardLowerGlobal);
 }
 
 void shuffle(Icon *elems, int nbElems) {
@@ -221,8 +221,8 @@ void renderScene() {
   drawText(title, WIN_WIDTH / 2, 1.2 * FONT_SIZE, Center, Top);
 
   // Dessin de la carte supérieure et de la carte inférieure
-  drawCard(UpperCard, card1);
-  drawCard(LowerCard, card2);
+  drawCard(UpperCard, cardUpperGlobal);
+  drawCard(LowerCard, cardLowerGlobal);
 
   // Met au premier plan le résultat des opérations de dessin
   showWindow();
@@ -236,13 +236,15 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1) {
+  // if (loadIconMatrix(DATA_DIRECTORY "/Matrice8x10_Icones90x90.png") != 1) {
+  if (loadIconMatrix(DATA_DIRECTORY "/Hearts_8x10_90x90pixels.png") != 1) {
     printf("dobble: Echec du chargement des icônes.\n");
     return -1;
   }
 
   // Lecture du fichier de cartes
-  readCardFile("../data/pg23.txt");
+  char const *cardFileName = "../data/pg23.txt";
+  readCardFile(cardFileName);
 
   // Sélection de deux cartes aléatoires
   changeCards();

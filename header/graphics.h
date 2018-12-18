@@ -1,6 +1,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#include <stdint.h>
 #include "dobble.h"
 
 typedef enum { UpperCard,
@@ -44,7 +45,8 @@ void getCardCenter(CardPosition card, int *cardCenterX, int *cardCenterY);
  * @param param   Paramètre à passer à la méthode lors de son appel.
  * @param delay   Temps (en millisecondes) avant l'appel de la méthode.
  */
-void callLater(void (*method)(void *), void *param, Uint32 delay);
+
+void callLater(void (*method)(void *), void *param, uint32_t delay);
 
 /****************** METHODES DE GESTION DU TIMER ******************/
 
@@ -116,7 +118,7 @@ int drawText(const char *message, int x, int y, HAlign hAlign, VAlign vAlign);
  * @param fb     Valeur B de la couleur de remplissage
  * @param fa     Valeur A de la couleur de remplissage
  */
-void fillCircle(int x0, int y0, int radius, Uint8 fr, Uint8 fg, Uint8 fb, Uint8 fa);
+void fillCircle(int x0, int y0, int radius, uint8_t fr, uint8_t fg, uint8_t fb, uint8_t fa);
 
 /**
  * Dessine un cercle d'une couleur donnée.
@@ -129,7 +131,7 @@ void fillCircle(int x0, int y0, int radius, Uint8 fr, Uint8 fg, Uint8 fb, Uint8 
  * @param fb     Valeur B de la couleur de dessin
  * @param fa     Valeur A de la couleur de dessin
  */
-void drawCircle(int x0, int y0, int radius, Uint8 fr, Uint8 fg, Uint8 fb, Uint8 fa);
+void drawCircle(int x0, int y0, int radius, uint8_t fr, uint8_t fg, uint8_t fb, uint8_t fa);
 
 /**
  * Affiche le fond et le contour d'une carte de jeu.
@@ -143,7 +145,7 @@ void drawCircle(int x0, int y0, int radius, Uint8 fr, Uint8 fg, Uint8 fb, Uint8 
  * @param  fgg      Valeur G de la couleur de contour
  * @param  fgb      Valeur B de la couleur de contour
  */
-void drawCardShape(CardPosition card, int w, Uint8 bgr, Uint8 bgg, Uint8 bgb, Uint8 fgr, Uint8 fgg, Uint8 fgb);
+void drawCardShape(CardPosition card, int w, uint8_t bgr, uint8_t bgg, uint8_t bgb, uint8_t fgr, uint8_t fgg, uint8_t fgb);
 
 /**
  * drawIcon dessine un icône dans la carte spécifiée. L'emplacement de

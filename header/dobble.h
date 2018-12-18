@@ -6,19 +6,14 @@ typedef enum {
         INCORRECT_FORMAT
 } Error;
 
-/**
- * Fonction qui
- */
-void readCardFile(char* fileName);
-
 typedef struct {
-        int iconId; //Numero de l'icon
-        double radius; //Distance entre le centre de la carte et le centre de dessin de l'icône.
-        double angle; //Angle entre l'horizontale et la position de dessin de l'icône.
-        double rotation; //Angle de rotation de l'icône par rapport à son centre.
-        double scale; //Facteur d'échelle pour le dessin de l'icône.
-        int centerX; //position x du centre de l'icon
-        int centerY; //position y du centre de l'icon
+        int iconId;       // Numéro de l'icône.
+        double radius;    // Distance entre le centre de la carte et le centre de dessin de l'icône.
+        double angle;     // Angle entre l'horizontale et la position de dessin de l'icône.
+        double rotation;  // Angle de rotation de l'icône par rapport à son centre.
+        double scale;     // Facteur d'échelle pour le dessin de l'icône.
+        int centerX;      // Position x du centre de l'icône.
+        int centerY;      // Position y du centre de l'icône.
 } Icon;
 
 typedef struct {
@@ -63,7 +58,7 @@ void initCard(Card* card, int nbIcons, int icons[]);
  *
  * @param fileName Le nom du fichier
  */
-void readCardFile(char *fileName);
+void readCardFile(char const *fileName);
 
 /**
  * Initialise aléatoirement une icône donnée (radius, rotation, scale)
@@ -114,11 +109,11 @@ void changeCards();
 void shuffle(Icon *elems, int nbElems);
 
 /**
-* Fonction qui dessine une carte
-*
-* @param currentCardPosition La position de la carte (haut ou bas)
-* @param currentCard         La carte à dessiner
-*/
+ * Fonction qui dessine une carte
+ *
+ * @param currentCardPosition La position de la carte (haut ou bas)
+ * @param currentCard         La carte à dessiner
+ */
 void drawCard(CardPosition currentCardPosition, Card currentCard);
 
 /**
