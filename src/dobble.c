@@ -364,6 +364,7 @@ void afficheBoutonsFin() {
 void afficheBoutonsDebut() {
   afficheBouton(4, 1 / 3., "Cœur", 200, 90, 180);
   afficheBouton(10, 1 / 3., "Flocon", 90, 190, 190);
+  afficheBouton(16, 1 / 3., "Food", 225, 150, 50);
 }
 
 void ExitBoutonClic(int mouseX, int mouseY) {
@@ -418,8 +419,20 @@ void EnterBoutonClic(int mouseX, int mouseY) {
       printError(ECHEC_ICONES);
     }
     startMenu = true;
+    return;
   }
-  return;
+
+  // Test si le clic est au niveau du bouton Flocon
+  centerY = 16 * FONT_SIZE + CARD_RADIUS;
+  distance = dist(mouseX, mouseY, centerX, centerY);
+  if (distance <= rayon) {
+    printf("Food");
+    if (loadIconMatrix(DATA_DIRECTORY "/Gastronomy_230_90x90pixels.png") != 1) {
+      printError(ECHEC_ICONES);
+    }
+    startMenu = true;
+    return;
+  }
 }
 
 Card getCardFromPosition(CardPosition cardPos) {
@@ -428,35 +441,6 @@ Card getCardFromPosition(CardPosition cardPos) {
   else
     return cardLowerGlobal;
 }
-
-// void initMovingIcons(CardPosition cardPos, Card card,
-//                      movingIcon movingIcons[]) {
-//   int cx, cy;
-//   initCardIcons(card);
-//   for (int currentIcon = 0; currentIcon < deckGlobal.nbCards;
-//   currentIcon++)
-//   {
-//     drawIcon(cardPos, card.icons[currentIcon], &cx, &cy);
-//     movingIcons[currentIcon].px = cx;
-//     movingIcons[currentIcon].py = cy;
-//     movingIcons[currentIcon].vx = 0;
-//     movingIcons[currentIcon].ax = 0;
-//     movingIcons[currentIcon].vy = 0;
-//     movingIcons[currentIcon].ay = 0;
-//   }
-// }
-
-// void updateMovingIcons(CardPosition cardPos, movingIcon movingIcons[]) {
-//   for (int i = 0; i < deckGlobal.nbCards; i++) {
-//     movingIcons[i].px += movingIcons[i].vx;
-//     movingIcons[i].py += movingIcons[i].vy;
-//     movingIcons[i].vx += movingIcons[i].ax;
-//     movingIcons[i].vy += movingIcons[i].ay;
-//     Card card = getCardFromPosition(cardPos);
-//     double dx = fabsf(movingIcons[i].px - card.icons[i].centerX);
-//     double dy = fabsf(movingIcons[i].py - card.icons[i].centerY);
-//   }
-// }
 
 int main(int argc, char **argv) {
   srand(time(NULL));
