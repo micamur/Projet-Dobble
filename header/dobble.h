@@ -188,6 +188,7 @@ void EnterBoutonClic(int mouseX, int mouseY);
  * @param offsetY     L'offset vertical (coefficient appliqué à FONT_SIZE)
  * @param circleWidth La taille du cercle du bouton (coefficient appliqué à CARD_RADIUS)
  */
-void afficheBouton(int offsetY, double circleWidth, char text[100]);
+void afficheBouton(int offsetY, double circleWidth, char text[100], int bgr,
+                   int bgg, int bgb);
 
 #endif /*DOBBLE_H*/

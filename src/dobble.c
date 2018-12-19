@@ -272,9 +272,11 @@ void renderScene() {
     // Crée le texte qui sera affiché avec le titre, le score et le temps
     // restant
     sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
-    drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+    drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+             TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
     sprintf(title, "Temps restant : %ds", timeGlobal);
-    drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+    drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
+             TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
     // Dessin de la carte supérieure et de la carte inférieure
     drawCard(UpperCard, cardUpperGlobal, resultatClicGlobal);
@@ -306,47 +308,60 @@ void afficheStats() {
   char title[100];
 
   sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
-  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "Nombre d'erreurs : %d", nbFalse);
-  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "Bravo ! Et merci d'avoir joué !");
-  drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "Voulez-vous rejouer ?");
-  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 }
 
 void afficheTitreMenuDebut() {
   char title[100];
 
   sprintf(title, "Bienvenue sur Dobble !");
-  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "À quelle version voulez-vous jouer ?");
-  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 }
 
-void afficheBouton(int offsetY, double circleWidth, char text[100]) {
-  drawCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
-             (CARD_RADIUS + 5) * circleWidth, (uint8_t)(GENERALCOLOR * 2),
-             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2), 255);
+void afficheBouton(int offsetY, double circleWidth, char text[100], int textR,
+                   int textG, int textB) {
+
+  int w = (int)(WIN_SCALE * 5);
+  if (w <= 0)
+    w = 1;
+  fillCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
+             (CARD_RADIUS + 5) * circleWidth + w / 2, textR, textG, textB, 255);
+  fillCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
+             (CARD_RADIUS + 5) * circleWidth - w / 2, 1.1 * GENERALCOLOR,
+             1.1 * GENERALCOLOR, 1.1 * GENERALCOLOR, 255);
 
   char title[100];
   sprintf(title, "%s\n", text);
   drawText(title, WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS, Center,
-           Middle);
+           Middle, textR, textG, textB, 1.1 * GENERALCOLOR);
 }
 
 void afficheBoutonsFin() {
-  afficheBouton(4, 1 / 4., "Oui");
-  afficheBouton(10, 1 / 4., "Non");
+  afficheBouton(4, 1 / 4., "Oui", TEXTCOLOR, TEXTCOLOR, TEXTCOLOR);
+  afficheBouton(10, 1 / 4., "Non", TEXTCOLOR, TEXTCOLOR, TEXTCOLOR);
 }
 
 void afficheBoutonsDebut() {
-  afficheBouton(4, 1 / 3., "Cœur");
-  afficheBouton(10, 1 / 3., "Flocon");
+  afficheBouton(4, 1 / 3., "Cœur", 200, 90, 180);
+  afficheBouton(10, 1 / 3., "Flocon", 90, 190, 190);
 }
 
 void ExitBoutonClic(int mouseX, int mouseY) {
