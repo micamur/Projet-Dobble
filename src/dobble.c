@@ -82,10 +82,11 @@ void readCardFile(char const *fileName) {
 
 void initIcon(Icon *icon, double angle) {
   icon->angle = angle;
-  icon->rotation = rand() % 360;          // random between 0 and 359
-  icon->scale = (rand() % 7) * 0.1 + 0.6; // random between 0.6 and 1.2
+  icon->rotation = rand() % 360; // random between 0 and 359
   icon->radius =
       CARD_RADIUS * (0.5 + (rand() % 3) * 0.1); // random between 0.5 and 0.7
+  icon->scale =
+      (rand() % 6) * 0.1 + 0.005 * icon->radius; // random between 0.6 and 1.2
 }
 
 void initCardIcons(Card currentCard) {
@@ -101,6 +102,7 @@ void initCardIcons(Card currentCard) {
   // Placement d'un icône au centre
   initIcon(&currentCard.icons[currentIcon], 0.);
   currentCard.icons[currentIcon].radius = 0;
+  currentCard.icons[currentIcon].scale = 1;
 }
 
 void onMouseMove(int x, int y) {
@@ -271,7 +273,7 @@ void renderScene() {
 
     // Crée le texte qui sera affiché avec le titre, le score et le temps
     // restant
-    sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
+    sprintf(title, "Ai & Yuki -Dobble     Score : %d", scoreGlobal);
     drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
              TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
     sprintf(title, "Temps restant : %ds", timeGlobal);
@@ -307,7 +309,7 @@ void afficheMenuFin() {
 void afficheStats() {
   char title[100];
 
-  sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
+  sprintf(title, "Ai & Yuki -Dobble     Score : %d", scoreGlobal);
   drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
@@ -327,7 +329,7 @@ void afficheStats() {
 void afficheTitreMenuDebut() {
   char title[100];
 
-  sprintf(title, "Bienvenue sur Dobble !");
+  sprintf(title, "Bienvenue sur Ai & Yuki Dobble !");
   drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
@@ -465,7 +467,7 @@ int main(int argc, char **argv) {
   }
 
   // Lecture du fichier de cartes
-  char const *cardFileName = "../data/pg24.txt";
+  char const *cardFileName = "../data/pg28.txt";
   readCardFile(cardFileName);
 
   // Sélection de deux cartes aléatoires

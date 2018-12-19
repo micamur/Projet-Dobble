@@ -398,7 +398,7 @@ int initializeGraphics() {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 
   // Création de la fenêtre
-  g.window = SDL_CreateWindow("Polytech - RICM3 - API - Projet Dobble",
+  g.window = SDL_CreateWindow("Polytech - RICM3 - API - 愛&雪 Dobble",
                               SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                               WIN_WIDTH, WIN_HEIGHT, 0);
 
