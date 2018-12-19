@@ -117,13 +117,15 @@ Resultat onMouseClick(int mouseX, int mouseY) {
 
   // Si le timer n'est pas enclanché :
   // Initialisation du menu puis lancement du timer
-  if (!timerRunning) {
+  if (!timerRunning && menu == false) {
     EnterBoutonClic(mouseX, mouseY);
     showWindow();
+  }
+
+  if (!timerRunning && menu == true) {
     printf("\ndobble: Démarrage du compte à rebours.\n");
     startTimer();
     timerRunning = true;
-    menu = true;
     return INDEFINI;
   }
 
@@ -398,8 +400,10 @@ void EnterBoutonClic(int mouseX, int mouseY) {
   float distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
     printf("Cœur");
-    if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1)
+    if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
+    }
+    menu = true;
     return;
   }
 
@@ -408,10 +412,12 @@ void EnterBoutonClic(int mouseX, int mouseY) {
   distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
     printf("Flocon");
-    if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1)
+    if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
-    return;
+    }
+    menu = true;
   }
+  return;
 }
 
 Card getCardFromPosition(CardPosition cardPos) {
