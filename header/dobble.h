@@ -33,15 +33,6 @@ typedef struct {
   Card* cards;
 } Deck;
 
-// typedef struct {
-//   float px;
-//   float py;
-//   float vx;
-//   float vy;
-//   float ax;
-//   float ay;
-// } movingIcon;
-
 #include "graphics.h"
 
 /**
