@@ -19,7 +19,7 @@ int timeGlobal, scoreGlobal, nbFalse;  // Temps restant et score du joueur
 Resultat
     resultatClicGlobal; // Vaut INCORRECT à si le joueur a fait une erreur,
                         // CORRECT si il a une bonne réponse et INDEFINI sinon
-bool menu; // permet de savoir si le menu a déja été initilisé ou pas
+bool startMenu; // permet de savoir si le menu a déja été initilisé ou pas
 
 void printError(Error error) {
   switch (error) {
@@ -117,12 +117,12 @@ Resultat onMouseClick(int mouseX, int mouseY) {
 
   // Si le timer n'est pas enclanché :
   // Initialisation du menu puis lancement du timer
-  if (!timerRunning && menu == false) {
+  if (!timerRunning && !startMenu) {
     EnterBoutonClic(mouseX, mouseY);
     showWindow();
   }
 
-  if (!timerRunning && menu == true) {
+  if (!timerRunning && startMenu) {
     printf("\ndobble: Démarrage du compte à rebours.\n");
     startTimer();
     timerRunning = true;
@@ -261,7 +261,7 @@ void renderScene() {
   // Affichage des différents menus ou du jeu
   if (timeGlobal <= 0) {
     afficheMenuFin();
-  } else if (menu == false) {
+  } else if (!startMenu) {
     afficheMenuDebut();
   } else {
     char title[100];
@@ -388,7 +388,7 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
     }
-    menu = true;
+    startMenu = true;
     return;
   }
 
@@ -400,7 +400,7 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
     }
-    menu = true;
+    startMenu = true;
   }
   return;
 }
@@ -457,7 +457,7 @@ int main(int argc, char **argv) {
   changeCards();
 
   // Initialisation des variables globales
-  menu = false;
+  startMenu = false;
   timeGlobal = 30;
   scoreGlobal = 0;
   nbFalse = 0;

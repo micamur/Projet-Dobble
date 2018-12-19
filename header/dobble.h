@@ -182,4 +182,12 @@ void afficheBoutonsDebut();
  */
 void EnterBoutonClic(int mouseX, int mouseY);
 
+/**
+ * Affiche un bouton à l'écran
+ *
+ * @param offsetY     L'offset vertical (coefficient appliqué à FONT_SIZE)
+ * @param circleWidth La taille du cercle du bouton (coefficient appliqué à CARD_RADIUS)
+ */
+void afficheBouton(int offsetY, double circleWidth, char text[100]);
+
 #endif /*DOBBLE_H*/
