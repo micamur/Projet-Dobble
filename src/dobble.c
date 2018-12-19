@@ -326,40 +326,25 @@ void afficheTitreMenuDebut() {
   drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
 }
 
-void afficheBoutonsFin() {
+void afficheBouton(int offsetY, double circleWidth, char text[100]) {
+  drawCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
+             (CARD_RADIUS + 5) * circleWidth, (uint8_t)(GENERALCOLOR * 2),
+             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2), 255);
+
   char title[100];
+  sprintf(title, "%s\n", text);
+  drawText(title, WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS, Center,
+           Middle);
+}
 
-  drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
-             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
-             (uint8_t)(GENERALCOLOR * 2), 255);
-
-  sprintf(title, "Oui");
-  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, Center, Middle);
-
-  drawCircle(WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 4,
-             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
-             (uint8_t)(GENERALCOLOR * 2), 255);
-
-  sprintf(title, "Non");
-  drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center, Middle);
+void afficheBoutonsFin() {
+  afficheBouton(4, 1 / 4., "Oui");
+  afficheBouton(10, 1 / 4., "Non");
 }
 
 void afficheBoutonsDebut() {
-  char title[100];
-
-  drawCircle(WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 3,
-             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
-             (uint8_t)(GENERALCOLOR * 2), 255);
-
-  sprintf(title, "Cœur");
-  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE + CARD_RADIUS, Center, Middle);
-
-  drawCircle(WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, (CARD_RADIUS + 5) / 3,
-             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2),
-             (uint8_t)(GENERALCOLOR * 2), 255);
-
-  sprintf(title, "Flocon");
-  drawText(title, WIN_WIDTH / 2, 10 * FONT_SIZE + CARD_RADIUS, Center, Middle);
+  afficheBouton(4, 1 / 3., "Cœur");
+  afficheBouton(10, 1 / 3., "Flocon");
 }
 
 void ExitBoutonClic(int mouseX, int mouseY) {
