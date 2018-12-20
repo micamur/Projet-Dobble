@@ -20,6 +20,8 @@ Resultat
     resultatClicGlobal; // Vaut INCORRECT à si le joueur a fait une erreur,
                         // CORRECT si il a une bonne réponse et INDEFINI sinon
 bool iconPackChosen; // permet de savoir si le pack d'icônes a déjà été choisi
+bool nbIconChosen; // permet de savoir si le nombre d'icones par carte a déjà
+                   // été choisi
 
 void printError(Error error) {
   switch (error) {
@@ -126,17 +128,25 @@ Resultat onMouseClick(int mouseX, int mouseY) {
   printf("\ndobble: Clic de la souris.\n");
 
   // Si le timer n'est pas enclanché :
-  // Choix du pack d'icônes puis lancement du timer
-  if (!timerRunning && !iconPackChosen) {
+  // Choix du pack d'icônes et du nombre d'icônes
+  if (!timerRunning && !(iconPackChosen && nbIconChosen)) {
     EnterBoutonClic(mouseX, mouseY);
     showWindow();
+    printf("ici4\n");
+    if (!(iconPackChosen && nbIconChosen)) {
+      return INDEFINI;
+    }
   }
 
   // Si le timmer n'est pas enclanché et que le menu a été initilisé
-  if (!timerRunning && iconPackChosen) {
+  if (!timerRunning && iconPackChosen && nbIconChosen) {
     printf("\ndobble: Démarrage du compte à rebours.\n");
+    // Sélection de deux première cartes aléatoires
+    changeCards();
+    // on enclanche le timmer
     startTimer();
     timerRunning = true;
+    printf("ici5\n");
     return INDEFINI;
   }
 
@@ -276,7 +286,6 @@ void renderScene() {
     afficheMenuDebut();
   } else {
     char title[100];
-
     // Efface le contenu de la fenêtre
     clearWindow();
 
@@ -338,42 +347,72 @@ void afficheStats() {
 void afficheTitreMenuDebut() {
   char title[100];
 
-  sprintf(title, "Bienvenue sur Ai & Yuki Dobble !");
-  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+  sprintf(title, "Bienvenue sur");
+  drawText(title, WIN_WIDTH / 3, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
+
+  sprintf(title, "Ai");
+  drawText(title, WIN_WIDTH / 1.9, 0.4 * FONT_SIZE, Center, Top, 200, 90, 180,
+           GENERALCOLOR);
+
+  sprintf(title, "&");
+  drawText(title, WIN_WIDTH / 1.75, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
+
+  sprintf(title, "Yuki");
+  drawText(title, WIN_WIDTH / 1.58, 0.4 * FONT_SIZE, Center, Top, 90, 190, 190,
+           GENERALCOLOR);
+
+  sprintf(title, "Dobble !");
+  drawText(title, WIN_WIDTH / 1.28, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "À quelle version voulez-vous jouer ?");
   drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
+
+  sprintf(title, "Choisissez le nombres d'icones par cartes!");
+  drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 }
 
-void afficheBouton(int offsetY, double circleWidth, char text[100], int textR,
-                   int textG, int textB) {
+void afficheBouton(int offsetX, int offsetY, double circleWidth, char text[100],
+                   int textR, int textG, int textB) {
 
   int w = (int)(WIN_SCALE * 5);
   if (w <= 0)
     w = 1;
-  fillCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
+  fillCircle(offsetX, offsetY * FONT_SIZE + CARD_RADIUS,
              (CARD_RADIUS + 5) * circleWidth + w / 2, textR, textG, textB, 255);
-  fillCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
+  fillCircle(offsetX, offsetY * FONT_SIZE + CARD_RADIUS,
              (CARD_RADIUS + 5) * circleWidth - w / 2, 1.1 * GENERALCOLOR,
              1.1 * GENERALCOLOR, 1.1 * GENERALCOLOR, 255);
 
   char title[100];
   sprintf(title, "%s\n", text);
-  drawText(title, WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS, Center,
-           Middle, textR, textG, textB, 1.1 * GENERALCOLOR);
+  drawText(title, offsetX, offsetY * FONT_SIZE + CARD_RADIUS, Center, Middle,
+           textR, textG, textB, 1.1 * GENERALCOLOR);
 }
 
 void afficheBoutonsFin() {
-  afficheBouton(4, 1 / 4., "Oui", TEXTCOLOR, TEXTCOLOR, TEXTCOLOR);
-  afficheBouton(10, 1 / 4., "Non", TEXTCOLOR, TEXTCOLOR, TEXTCOLOR);
+  afficheBouton(WIN_WIDTH / 2, 4, 1 / 4., "Oui", TEXTCOLOR, TEXTCOLOR,
+                TEXTCOLOR);
+  afficheBouton(WIN_WIDTH / 2, 10, 1 / 4., "Non", TEXTCOLOR, TEXTCOLOR,
+                TEXTCOLOR);
 }
 
 void afficheBoutonsDebut() {
-  afficheBouton(4, 1 / 3., "Cœur", 200, 90, 180);
-  afficheBouton(10, 1 / 3., "Flocon", 90, 190, 190);
-  afficheBouton(16, 1 / 3., "Food", 225, 150, 50);
+  // affichage des bouton de choix d'icones
+  afficheBouton(WIN_WIDTH / 2, 4, 1 / 3., "Cœur", 200, 90, 180);
+  afficheBouton(WIN_WIDTH / 2, 10, 1 / 3., "Flocon", 90, 190, 190);
+  afficheBouton(WIN_WIDTH / 2, 16, 1 / 3., "Food", 225, 150, 50);
+  // affichage des boutons de choix du nombre d'icones par cartes
+  afficheBouton(WIN_WIDTH / 4, 23, 1 / 5., "3", 150, 60, 10);
+  afficheBouton(WIN_WIDTH / 2, 23, 1 / 5., "4", 150, 60, 10);
+  afficheBouton((WIN_WIDTH * 3) / 4, 23, 1 / 5., "5", 150, 60, 10);
+  afficheBouton(WIN_WIDTH / 4, 27, 1 / 5., "6", 150, 60, 10);
+  afficheBouton(WIN_WIDTH / 2, 27, 1 / 5., "8", 150, 60, 10);
+  afficheBouton((WIN_WIDTH * 3) / 4, 27, 1 / 5., "9", 150, 60, 10);
 }
 
 void ExitBoutonClic(int mouseX, int mouseY) {
@@ -433,7 +472,7 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     return;
   }
 
-  // Test si le clic est au niveau du bouton Flocon
+  // Test si le clic est au niveau du bouton Food
   centerY = 16 * FONT_SIZE + CARD_RADIUS;
   distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
@@ -444,7 +483,81 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     iconPackChosen = true;
     return;
   }
-  // Si le clic est hors des deux boutons on sort de la fonction sans rien faire
+
+  // Test si le clic est au niveau du bouton 3, puis 4 puis 5
+  centerX = WIN_WIDTH / 4;
+  centerY = 23 * FONT_SIZE + CARD_RADIUS;
+  distance = dist(mouseX, mouseY, centerX, centerY);
+  if (distance <= rayon) {
+    printf("3 icones");
+    char const *cardFileName = "../data/pg22.txt";
+    // Lecture du fichier de cartes
+    readCardFile(cardFileName);
+    nbIconChosen = true;
+    return;
+  }
+
+  centerX = WIN_WIDTH / 2;
+  distance = dist(mouseX, mouseY, centerX, centerY);
+  if (distance <= rayon) {
+    printf("4 icones");
+    char const *cardFileName = "../data/pg23.txt";
+    // Lecture du fichier de cartes
+    readCardFile(cardFileName);
+    nbIconChosen = true;
+    return;
+  }
+
+  centerX = (WIN_WIDTH * 3) / 4;
+  distance = dist(mouseX, mouseY, centerX, centerY);
+  if (distance <= rayon) {
+    printf("5 icones");
+    char const *cardFileName = "../data/pg24.txt";
+    // Lecture du fichier de cartes
+    readCardFile(cardFileName);
+    nbIconChosen = true;
+    return;
+  }
+
+  // Test si le clic est au niveau du bouton 6, puis 7 puis 8
+  centerX = WIN_WIDTH / 4;
+  centerY = 27 * FONT_SIZE + CARD_RADIUS;
+  distance = dist(mouseX, mouseY, centerX, centerY);
+  if (distance <= rayon) {
+    printf("6 icones");
+    char const *cardFileName = "../data/pg25.txt";
+    // Lecture du fichier de cartes
+    readCardFile(cardFileName);
+    nbIconChosen = true;
+    return;
+  }
+
+  centerX = WIN_WIDTH / 2;
+  distance = dist(mouseX, mouseY, centerX, centerY);
+  if (distance <= rayon) {
+    printf("8 icones");
+    printf("ici\n");
+    char const *cardFileName = "../data/pg27.txt";
+    printf("ici1\n");
+    // Lecture du fichier de cartes
+    readCardFile(cardFileName);
+    printf("ici2\n");
+    nbIconChosen = true;
+    return;
+  }
+
+  centerX = (WIN_WIDTH * 3) / 4;
+  distance = dist(mouseX, mouseY, centerX, centerY);
+  if (distance <= rayon) {
+    printf("9 icones");
+    char const *cardFileName = "../data/pg28.txt";
+    // Lecture du fichier de cartes
+    readCardFile(cardFileName);
+    nbIconChosen = true;
+    return;
+  }
+  // Si le clic est hors des deux boutons on sort de la fonction sans rien
+  // faire
   return;
 }
 
@@ -458,25 +571,19 @@ Card getCardFromPosition(CardPosition cardPos) {
 int main(int argc, char **argv) {
   srand(time(NULL));
 
+  printf("dans le main\n");
   if (!initializeGraphics()) {
     printf("dobble: Echec de l'initialisation de la librairie graphique.\n");
     return 1;
   }
 
-  // Lecture du fichier de cartes
-  char const *cardFileName = "../data/pg28.txt";
-  readCardFile(cardFileName);
-
-  // Sélection de deux cartes aléatoires
-  changeCards();
-
   // Initialisation des variables globales
   iconPackChosen = false;
+  nbIconChosen = false;
   timeGlobal = 30;
   scoreGlobal = 0;
   nbFalse = 0;
   resultatClicGlobal = INDEFINI;
-  // Initilisé à INDEFINI : on n'a encore donné ni bonne ni mauvaise réponse
 
   mainLoop();
 

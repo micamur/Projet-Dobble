@@ -14,7 +14,8 @@
 /* Chemin d'accès au dossier de données du projet (data) */
 #define DATA_DIRECTORY "@DATA_DIRECTORY@"
 
-/* Echelle de la fenêtre de rendu, à ajuster en fonction de la taille de l'écran */
+/* Echelle de la fenêtre de rendu, à ajuster en fonction de la taille de l'écran
+ */
 #define WIN_SCALE 1.0
 
 /* Largeur de la fenêtre de rendu */
