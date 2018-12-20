@@ -122,6 +122,7 @@ Resultat onMouseClick(int mouseX, int mouseY) {
     showWindow();
   }
 
+  // Si le timmer n'est pas enclanché et que le menu a été initilisé
   if (!timerRunning && menu == true) {
     printf("\ndobble: Démarrage du compte à rebours.\n");
     startTimer();
@@ -329,7 +330,7 @@ void afficheTitreMenuDebut() {
 }
 
 void afficheBouton(int offsetY, double circleWidth, char text[100]) {
-  drawCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
+  fillCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
              (CARD_RADIUS + 5) * circleWidth, (uint8_t)(GENERALCOLOR * 2),
              (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2), 255);
 
@@ -402,6 +403,7 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     }
     menu = true;
   }
+  // Si le clic est hors des deux boutons on sort de la fonction sans rien faire
   return;
 }
 

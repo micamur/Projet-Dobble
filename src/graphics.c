@@ -206,7 +206,8 @@ void showWindow() { SDL_RenderPresent(g.renderer); }
 
 void requestRedraw() { g.redrawRequested = true; }
 
-int drawText(const char *message, int x, int y, HAlign hAlign, VAlign vAlign) {
+int drawText(const char *message, int x, int y, HAlign hAlign,
+             VAlign vAlign, ) {
   SDL_Surface *text = NULL;
   SDL_Texture *textTexture = NULL;
   int tw, th;
