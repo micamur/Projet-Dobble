@@ -33,15 +33,6 @@ typedef struct {
   Card* cards;
 } Deck;
 
-// typedef struct {
-//   float px;
-//   float py;
-//   float vx;
-//   float vy;
-//   float ax;
-//   float ay;
-// } movingIcon;
-
 #include "graphics.h"
 
 /**
@@ -181,5 +172,14 @@ void afficheBoutonsDebut();
  * Évènements déclenchés lors d'un clic sur un bouton du menu de début
  */
 void EnterBoutonClic(int mouseX, int mouseY);
+
+/**
+ * Affiche un bouton à l'écran
+ *
+ * @param offsetY     L'offset vertical (coefficient appliqué à FONT_SIZE)
+ * @param circleWidth La taille du cercle du bouton (coefficient appliqué à CARD_RADIUS)
+ */
+void afficheBouton(int offsetY, double circleWidth, char text[100], int bgr,
+                   int bgg, int bgb);
 
 #endif /*DOBBLE_H*/

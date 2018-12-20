@@ -206,14 +206,14 @@ void showWindow() { SDL_RenderPresent(g.renderer); }
 
 void requestRedraw() { g.redrawRequested = true; }
 
-int drawText(const char *message, int x, int y, HAlign hAlign,
-             VAlign vAlign, ) {
+int drawText(const char *message, int x, int y, HAlign hAlign, VAlign vAlign,
+             int textR, int textG, int textB, int bgShade) {
   SDL_Surface *text = NULL;
   SDL_Texture *textTexture = NULL;
   int tw, th;
 
-  SDL_Color textColor = {TEXTCOLOR, TEXTCOLOR, TEXTCOLOR},
-            textBackground = {GENERALCOLOR, GENERALCOLOR, GENERALCOLOR};
+  SDL_Color textColor = {textR, textG, textB},
+            textBackground = {bgShade, bgShade, bgShade};
 
   // Rendu du texte dans une surface (texte foncé, fond clair)
   text = TTF_RenderUTF8_Shaded(g.font, message, textColor, textBackground);
@@ -398,7 +398,7 @@ int initializeGraphics() {
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 
   // Création de la fenêtre
-  g.window = SDL_CreateWindow("Polytech - RICM3 - API - Projet Dobble",
+  g.window = SDL_CreateWindow("Polytech - RICM3 - API - 愛&雪 Dobble",
                               SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                               WIN_WIDTH, WIN_HEIGHT, 0);
 

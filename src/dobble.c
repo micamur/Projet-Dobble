@@ -19,7 +19,7 @@ int timeGlobal, scoreGlobal, nbFalse;  // Temps restant et score du joueur
 Resultat
     resultatClicGlobal; // Vaut INCORRECT à si le joueur a fait une erreur,
                         // CORRECT si il a une bonne réponse et INDEFINI sinon
-bool menu; // permet de savoir si le menu a déja été initilisé ou pas
+bool iconPackChosen; // permet de savoir si le pack d'icônes a déjà été choisi
 
 void printError(Error error) {
   switch (error) {
@@ -82,10 +82,11 @@ void readCardFile(char const *fileName) {
 
 void initIcon(Icon *icon, double angle) {
   icon->angle = angle;
-  icon->rotation = rand() % 360;          // random between 0 and 359
-  icon->scale = (rand() % 7) * 0.1 + 0.6; // random between 0.6 and 1.2
+  icon->rotation = rand() % 360; // random between 0 and 359
   icon->radius =
       CARD_RADIUS * (0.5 + (rand() % 3) * 0.1); // random between 0.5 and 0.7
+  icon->scale =
+      (rand() % 6) * 0.1 + 0.005 * icon->radius; // random between 0.6 and 1.2
 }
 
 void initCardIcons(Card currentCard) {
@@ -101,6 +102,7 @@ void initCardIcons(Card currentCard) {
   // Placement d'un icône au centre
   initIcon(&currentCard.icons[currentIcon], 0.);
   currentCard.icons[currentIcon].radius = 0;
+  currentCard.icons[currentIcon].scale = 1;
 }
 
 void onMouseMove(int x, int y) {
@@ -116,14 +118,14 @@ Resultat onMouseClick(int mouseX, int mouseY) {
   printf("\ndobble: Clic de la souris.\n");
 
   // Si le timer n'est pas enclanché :
-  // Initialisation du menu puis lancement du timer
-  if (!timerRunning && menu == false) {
+  // Choix du pack d'icônes puis lancement du timer
+  if (!timerRunning && !iconPackChosen) {
     EnterBoutonClic(mouseX, mouseY);
     showWindow();
   }
 
   // Si le timmer n'est pas enclanché et que le menu a été initilisé
-  if (!timerRunning && menu == true) {
+  if (!timerRunning && iconPackChosen) {
     printf("\ndobble: Démarrage du compte à rebours.\n");
     startTimer();
     timerRunning = true;
@@ -262,7 +264,7 @@ void renderScene() {
   // Affichage des différents menus ou du jeu
   if (timeGlobal <= 0) {
     afficheMenuFin();
-  } else if (menu == false) {
+  } else if (!iconPackChosen) {
     afficheMenuDebut();
   } else {
     char title[100];
@@ -272,10 +274,12 @@ void renderScene() {
 
     // Crée le texte qui sera affiché avec le titre, le score et le temps
     // restant
-    sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
-    drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+    sprintf(title, "Ai & Yuki -Dobble     Score : %d", scoreGlobal);
+    drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+             TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
     sprintf(title, "Temps restant : %ds", timeGlobal);
-    drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+    drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
+             TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
     // Dessin de la carte supérieure et de la carte inférieure
     drawCard(UpperCard, cardUpperGlobal, resultatClicGlobal);
@@ -306,48 +310,62 @@ void afficheMenuFin() {
 void afficheStats() {
   char title[100];
 
-  sprintf(title, "Velphy-Dobble     Score : %d", scoreGlobal);
-  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+  sprintf(title, "Ai & Yuki -Dobble     Score : %d", scoreGlobal);
+  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "Nombre d'erreurs : %d", nbFalse);
-  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "Bravo ! Et merci d'avoir joué !");
-  drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "Voulez-vous rejouer ?");
-  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 }
 
 void afficheTitreMenuDebut() {
   char title[100];
 
-  sprintf(title, "Bienvenue sur Dobble !");
-  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top);
+  sprintf(title, "Bienvenue sur Ai & Yuki Dobble !");
+  drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
   sprintf(title, "À quelle version voulez-vous jouer ?");
-  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top);
+  drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
+           TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 }
 
-void afficheBouton(int offsetY, double circleWidth, char text[100]) {
+void afficheBouton(int offsetY, double circleWidth, char text[100], int textR,
+                   int textG, int textB) {
+
+  int w = (int)(WIN_SCALE * 5);
+  if (w <= 0)
+    w = 1;
   fillCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
-             (CARD_RADIUS + 5) * circleWidth, (uint8_t)(GENERALCOLOR * 2),
-             (uint8_t)(GENERALCOLOR * 2), (uint8_t)(GENERALCOLOR * 2), 255);
+             (CARD_RADIUS + 5) * circleWidth + w / 2, textR, textG, textB, 255);
+  fillCircle(WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS,
+             (CARD_RADIUS + 5) * circleWidth - w / 2, 1.1 * GENERALCOLOR,
+             1.1 * GENERALCOLOR, 1.1 * GENERALCOLOR, 255);
 
   char title[100];
   sprintf(title, "%s\n", text);
   drawText(title, WIN_WIDTH / 2, offsetY * FONT_SIZE + CARD_RADIUS, Center,
-           Middle);
+           Middle, textR, textG, textB, 1.1 * GENERALCOLOR);
 }
 
 void afficheBoutonsFin() {
-  afficheBouton(4, 1 / 4., "Oui");
-  afficheBouton(10, 1 / 4., "Non");
+  afficheBouton(4, 1 / 4., "Oui", TEXTCOLOR, TEXTCOLOR, TEXTCOLOR);
+  afficheBouton(10, 1 / 4., "Non", TEXTCOLOR, TEXTCOLOR, TEXTCOLOR);
 }
 
 void afficheBoutonsDebut() {
-  afficheBouton(4, 1 / 3., "Cœur");
-  afficheBouton(10, 1 / 3., "Flocon");
+  afficheBouton(4, 1 / 3., "Cœur", 200, 90, 180);
+  afficheBouton(10, 1 / 3., "Flocon", 90, 190, 190);
+  afficheBouton(16, 1 / 3., "Food", 225, 150, 50);
 }
 
 void ExitBoutonClic(int mouseX, int mouseY) {
@@ -389,7 +407,7 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
     }
-    menu = true;
+    iconPackChosen = true;
     return;
   }
 
@@ -401,7 +419,20 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
     }
-    menu = true;
+    iconPackChosen = true;
+    return;
+  }
+
+  // Test si le clic est au niveau du bouton Flocon
+  centerY = 16 * FONT_SIZE + CARD_RADIUS;
+  distance = dist(mouseX, mouseY, centerX, centerY);
+  if (distance <= rayon) {
+    printf("Food");
+    if (loadIconMatrix(DATA_DIRECTORY "/Gastronomy_230_90x90pixels.png") != 1) {
+      printError(ECHEC_ICONES);
+    }
+    iconPackChosen = true;
+    return;
   }
   // Si le clic est hors des deux boutons on sort de la fonction sans rien faire
   return;
@@ -414,35 +445,6 @@ Card getCardFromPosition(CardPosition cardPos) {
     return cardLowerGlobal;
 }
 
-// void initMovingIcons(CardPosition cardPos, Card card,
-//                      movingIcon movingIcons[]) {
-//   int cx, cy;
-//   initCardIcons(card);
-//   for (int currentIcon = 0; currentIcon < deckGlobal.nbCards;
-//   currentIcon++)
-//   {
-//     drawIcon(cardPos, card.icons[currentIcon], &cx, &cy);
-//     movingIcons[currentIcon].px = cx;
-//     movingIcons[currentIcon].py = cy;
-//     movingIcons[currentIcon].vx = 0;
-//     movingIcons[currentIcon].ax = 0;
-//     movingIcons[currentIcon].vy = 0;
-//     movingIcons[currentIcon].ay = 0;
-//   }
-// }
-
-// void updateMovingIcons(CardPosition cardPos, movingIcon movingIcons[]) {
-//   for (int i = 0; i < deckGlobal.nbCards; i++) {
-//     movingIcons[i].px += movingIcons[i].vx;
-//     movingIcons[i].py += movingIcons[i].vy;
-//     movingIcons[i].vx += movingIcons[i].ax;
-//     movingIcons[i].vy += movingIcons[i].ay;
-//     Card card = getCardFromPosition(cardPos);
-//     double dx = fabsf(movingIcons[i].px - card.icons[i].centerX);
-//     double dy = fabsf(movingIcons[i].py - card.icons[i].centerY);
-//   }
-// }
-
 int main(int argc, char **argv) {
   srand(time(NULL));
 
@@ -452,14 +454,14 @@ int main(int argc, char **argv) {
   }
 
   // Lecture du fichier de cartes
-  char const *cardFileName = "../data/pg24.txt";
+  char const *cardFileName = "../data/pg28.txt";
   readCardFile(cardFileName);
 
   // Sélection de deux cartes aléatoires
   changeCards();
 
   // Initialisation des variables globales
-  menu = false;
+  iconPackChosen = false;
   timeGlobal = 30;
   scoreGlobal = 0;
   nbFalse = 0;

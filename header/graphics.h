@@ -4,21 +4,21 @@
 #include <stdint.h>
 #include "dobble.h"
 
-#define GENERALCOLOR 200
+#define GENERALCOLOR 220
 #define TEXTCOLOR 130
-#define CARDCOLOR 245
+#define CARDCOLOR 250
 #define CARDBORDER 160
 
 typedef enum { UpperCard,
-	       LowerCard } CardPosition;
+															LowerCard } CardPosition;
 
 typedef enum { Top,
-	       Middle,
-	       Bottom } VAlign;
+															Middle,
+															Bottom } VAlign;
 
 typedef enum { Left,
-	       Center,
-	       Right } HAlign;
+															Center,
+															Right } HAlign;
 
 /****************** METHODES A IMPLEMENTER ******************/
 /*********** Voir graphics.c pour l'implémentation **********/
@@ -110,7 +110,8 @@ void requestRedraw();
  * @param  vAlign  Alignement vertical
  * @return         1 si le dessin a réussi, 0 sinon.
  */
-int drawText(const char *message, int x, int y, HAlign hAlign, VAlign vAlign);
+int drawText(const char *message, int x, int y, HAlign hAlign, VAlign vAlign,
+													int textR, int textG, int textB, int bgShade);
 
 /**
  * Remplit un disque d'une couleur donnée.
