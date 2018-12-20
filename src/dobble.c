@@ -10,18 +10,7 @@
 #include "dobble.h"
 #include "graphics.h"
 
-static bool timerRunning; // État du compte à rebours (lancé/non lancé)
-
-Card cardUpperGlobal, cardLowerGlobal; // Cartes du haut et du bas
-Deck deckGlobal;                       // Deck des cartes du jeu actuel
-int timeGlobal, scoreGlobal, nbFalse;  // Temps restant et score du joueur
-
-Resultat
-    resultatClicGlobal; // Vaut INCORRECT à si le joueur a fait une erreur,
-                        // CORRECT si il a une bonne réponse et INDEFINI sinon
-bool iconPackChosen; // permet de savoir si le pack d'icônes a déjà été choisi
-bool nbIconChosen; // permet de savoir si le nombre d'icones par carte a déjà
-                   // été choisi
+Game gameGlobal; // Jeu actuel avec toutes les variables nécessaires
 
 void printError(Error error) {
   switch (error) {
@@ -39,9 +28,9 @@ void printError(Error error) {
 }
 
 void initDeck(int nbCards, int nbIcons) {
-  deckGlobal.nbIcons = nbIcons;
-  deckGlobal.nbCards = nbCards;
-  deckGlobal.cards = (Card *)malloc(sizeof(Card) * nbCards);
+  gameGlobal.nbIcons = nbIcons;
+  gameGlobal.nbCards = nbCards;
+  gameGlobal.cards = (Card *)malloc(sizeof(Card) * nbCards);
 }
 
 void initCard(Card *card, int nbIcons, int icons[]) {
@@ -65,8 +54,8 @@ void initCardIcons(Card currentCard) {
   int angleOffset = rand() % 360; // random between 0 and 359
 
   // Placement des icônes en cercle (régulièrement)
-  for (int angle = angleOffset; currentIcon < deckGlobal.nbIcons - 1;
-       angle += 360 / (deckGlobal.nbIcons - 1)) {
+  for (int angle = angleOffset; currentIcon < gameGlobal.nbIcons - 1;
+       angle += 360 / (gameGlobal.nbIcons - 1)) {
     initIcon(&currentCard.icons[currentIcon++], angle % 360);
   }
 
@@ -77,10 +66,10 @@ void initCardIcons(Card currentCard) {
 }
 
 void freeDeck() {
-  for (int i = 0; i < deckGlobal.nbCards; i++) {
-    free(deckGlobal.cards[i].icons);
+  for (int i = 0; i < gameGlobal.nbCards; i++) {
+    free(gameGlobal.cards[i].icons);
   }
-  free(deckGlobal.cards);
+  free(gameGlobal.cards);
   printf("freeDeck\n");
 }
 
@@ -108,7 +97,7 @@ void readCardFile(char const *fileName) {
         printError(INCORRECT_FORMAT);
       icons[j] = iconId;
     }
-    initCard(&deckGlobal.cards[i], nbIcons, icons);
+    initCard(&gameGlobal.cards[i], nbIcons, icons);
   }
 
   fclose(data);
@@ -128,36 +117,38 @@ Resultat onMouseClick(int mouseX, int mouseY) {
 
   // Si le timer n'est pas enclanché :
   // Choix du pack d'icônes et du nombre d'icônes
-  if (!timerRunning && !(iconPackChosen && nbIconChosen)) {
+  if (!gameGlobal.timerRunning &&
+      !(gameGlobal.iconPackChosen && gameGlobal.nbIconChosen)) {
     EnterBoutonClic(mouseX, mouseY);
     showWindow();
-    if (!(iconPackChosen && nbIconChosen)) {
+    if (!(gameGlobal.iconPackChosen && gameGlobal.nbIconChosen)) {
       return INDEFINI;
     }
   }
 
   // Si le timmer n'est pas enclanché et que le menu a été initilisé
-  if (!timerRunning && iconPackChosen && nbIconChosen) {
-    printf("\ndobble: Démarrage du compte à rebours.\n");
+  if (!gameGlobal.timerRunning && gameGlobal.iconPackChosen &&
+      gameGlobal.nbIconChosen) {
+    printf("dobble: Démarrage du compte à rebours.\n");
     // Sélection de deux première cartes aléatoires
     changeCards();
     // on enclanche le timmer
     startTimer();
-    timerRunning = true;
+    gameGlobal.timerRunning = true;
     return INDEFINI;
   }
 
   // Si le timer est inferieur ou égal à 0 on gère les clics du menu de fin
   // Sinon cas normal du mainloop
-  if (timeGlobal <= 0) {
+  if (gameGlobal.time <= 0) {
     ExitBoutonClic(mouseX, mouseY);
   } else {
     // Identification de l'icône identique aux deux cartes
     int indexOfIdenticalIconUpper;
-    for (int i = 0; i < deckGlobal.nbIcons; i++) {
-      for (int j = 0; j < deckGlobal.nbIcons; j++) {
-        if (cardUpperGlobal.icons[i].iconId ==
-            cardLowerGlobal.icons[j].iconId) {
+    for (int i = 0; i < gameGlobal.nbIcons; i++) {
+      for (int j = 0; j < gameGlobal.nbIcons; j++) {
+        if (gameGlobal.cardUpper.icons[i].iconId ==
+            gameGlobal.cardLower.icons[j].iconId) {
           indexOfIdenticalIconUpper = i;
         }
       }
@@ -175,27 +166,27 @@ Resultat onMouseClick(int mouseX, int mouseY) {
     }
 
     // Calcul de la distance entre le curseur au moment du clic et le bon icône
-    int centerY = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerY;
-    int centerX = cardUpperGlobal.icons[indexOfIdenticalIconUpper].centerX;
-    float scale = cardUpperGlobal.icons[indexOfIdenticalIconUpper].scale;
+    int centerY = gameGlobal.cardUpper.icons[indexOfIdenticalIconUpper].centerY;
+    int centerX = gameGlobal.cardUpper.icons[indexOfIdenticalIconUpper].centerX;
+    float scale = gameGlobal.cardUpper.icons[indexOfIdenticalIconUpper].scale;
     distance = dist(mouseX, mouseY, centerX, centerY);
 
     // Si le joueur a cliqué sur le bon icône il gagne du temps, on augmente
     // son score et le résultat de son clic est mis à CORRECT
     if (distance <= (scale * WIN_ICON_SIZE) / 2.) {
       iconClickedIsCorrect = true;
-      timeGlobal += 3;
-      scoreGlobal++;
-      resultatClicGlobal = CORRECT;
+      gameGlobal.time += 3;
+      gameGlobal.score++;
+      gameGlobal.resultatClic = CORRECT;
       changeCards();
       renderScene();
       return CORRECT;
     } else {
       // Si le joueur n'a pas cliqué sur le bon icône il perd du temps et le
       // résultat de son clic est mis à INCORRECT
-      timeGlobal -= 3;
-      resultatClicGlobal = INCORRECT;
-      nbFalse++;
+      gameGlobal.time -= 3;
+      gameGlobal.resultatClic = INCORRECT;
+      gameGlobal.nbFalse++;
       changeCards();
       renderScene();
       return INCORRECT;
@@ -206,33 +197,33 @@ Resultat onMouseClick(int mouseX, int mouseY) {
 
 void onTimerTick() {
   printf("\ndobble: Tic du compte à rebours\n");
-  timeGlobal--;
+  gameGlobal.time--;
   renderScene();
 }
 
 void changeCards() {
   int i, j;
 
-  // Sélection d'un indice pour cardUpperGlobal différent de ceux des cartes
-  // précédentes
+  // Sélection d'un indice pour gameGlobal.cardUpper différent de ceux des
+  // cartes précédentes
   do {
-    i = rand() % (deckGlobal.nbCards);
-  } while (deckGlobal.cards[i].icons == cardUpperGlobal.icons ||
-           deckGlobal.cards[i].icons == cardLowerGlobal.icons);
+    i = rand() % (gameGlobal.nbCards);
+  } while (gameGlobal.cards[i].icons == gameGlobal.cardUpper.icons ||
+           gameGlobal.cards[i].icons == gameGlobal.cardLower.icons);
 
-  // Sélection d'un indice pour cardLowerGlobal différent de ceux des cartes
-  // précédentes et de celui de cardUpperGlobal
+  // Sélection d'un indice pour gameGlobal.cardLower différent de ceux des
+  // cartes précédentes et de celui de gameGlobal.cardUpper
   do {
-    j = rand() % (deckGlobal.nbCards);
-  } while (deckGlobal.cards[j].icons == cardUpperGlobal.icons ||
-           deckGlobal.cards[i].icons == cardLowerGlobal.icons || i == j);
+    j = rand() % (gameGlobal.nbCards);
+  } while (gameGlobal.cards[j].icons == gameGlobal.cardUpper.icons ||
+           gameGlobal.cards[i].icons == gameGlobal.cardLower.icons || i == j);
 
-  // Mise à jour de cardUpperGlobal et cardLowerGlobal en fonction des
+  // Mise à jour de gameGlobal.cardUpper et gameGlobal.cardLower en fonction des
   // nouveaux indices
-  cardUpperGlobal = deckGlobal.cards[i];
-  initCardIcons(cardUpperGlobal);
-  cardLowerGlobal = deckGlobal.cards[j];
-  initCardIcons(cardLowerGlobal);
+  gameGlobal.cardUpper = gameGlobal.cards[i];
+  initCardIcons(gameGlobal.cardUpper);
+  gameGlobal.cardLower = gameGlobal.cards[j];
+  initCardIcons(gameGlobal.cardLower);
 }
 
 void shuffle(Icon *elems, int nbElems) {
@@ -264,10 +255,10 @@ void drawCard(CardPosition currentCardPosition, Card currentCard,
                   CARDBORDER, CARDBORDER, CARDBORDER);
   }
   // Mélange des icônes
-  shuffle(currentCard.icons, deckGlobal.nbIcons);
+  shuffle(currentCard.icons, gameGlobal.nbIcons);
 
   // Affichage des icônes de la carte du courante (régulièrement en cercle)
-  for (int currentIcon = 0; currentIcon < deckGlobal.nbIcons; currentIcon++) {
+  for (int currentIcon = 0; currentIcon < gameGlobal.nbIcons; currentIcon++) {
     drawIcon(currentCardPosition, currentCard.icons[currentIcon], &cx, &cy);
     currentCard.icons[currentIcon].centerX = cx;
     currentCard.icons[currentIcon].centerY = cy;
@@ -277,9 +268,9 @@ void drawCard(CardPosition currentCardPosition, Card currentCard,
 
 void renderScene() {
   // Affichage des différents menus ou du jeu
-  if (timeGlobal <= 0) {
+  if (gameGlobal.time <= 0) {
     afficheMenuFin();
-  } else if (!iconPackChosen) {
+  } else if (!gameGlobal.iconPackChosen) {
     afficheMenuDebut();
   } else {
     char title[100];
@@ -288,19 +279,19 @@ void renderScene() {
 
     // Crée le texte qui sera affiché avec le titre, le score et le temps
     // restant
-    sprintf(title, "Ai & Yuki - Dobble     Score : %d", scoreGlobal);
+    sprintf(title, "Ai & Yuki - Dobble     Score : %d", gameGlobal.score);
     drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
              TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
-    sprintf(title, "Temps restant : %ds", timeGlobal);
+    sprintf(title, "Temps restant : %ds", gameGlobal.time);
     drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
              TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
     // Dessin de la carte supérieure et de la carte inférieure
-    drawCard(UpperCard, cardUpperGlobal, resultatClicGlobal);
+    drawCard(UpperCard, gameGlobal.cardUpper, gameGlobal.resultatClic);
     // on remet erreur à 0 pour que seulement le cercle du
     // haut soit modifié en cas d'erreur ou de bonne réponse
-    resultatClicGlobal = INDEFINI;
-    drawCard(LowerCard, cardLowerGlobal, resultatClicGlobal);
+    gameGlobal.resultatClic = INDEFINI;
+    drawCard(LowerCard, gameGlobal.cardLower, gameGlobal.resultatClic);
 
     // Met au premier plan le résultat des opérations de dessin
     showWindow();
@@ -324,11 +315,11 @@ void afficheMenuFin() {
 void afficheStats() {
   char title[100];
 
-  sprintf(title, "Ai & Yuki - Dobble     Score : %d", scoreGlobal);
+  sprintf(title, "Ai & Yuki - Dobble     Score : %d", gameGlobal.score);
   drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
-  sprintf(title, "Nombre d'erreurs : %d", nbFalse);
+  sprintf(title, "Nombre d'erreurs : %d", gameGlobal.nbFalse);
   drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
@@ -423,9 +414,9 @@ void ExitBoutonClic(int mouseX, int mouseY) {
     // on reprend 2 nouvelles cartes
     changeCards();
     // on réinitialise le temps et on conserve le score
-    timeGlobal = 30;
+    gameGlobal.time = 30;
     // on remet le résultat à INDEFINI pour l'inintialiser normalement
-    resultatClicGlobal = INDEFINI;
+    gameGlobal.resultatClic = INDEFINI;
     // on relance la boucle principale
     mainLoop();
     // on conserve le score d'une partie à l'autre
@@ -463,11 +454,11 @@ void EnterBoutonClic(int mouseX, int mouseY) {
   int centerY = 4 * FONT_SIZE + CARD_RADIUS;
   float distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
-    printf("Cœur");
+    printf("Pack cœur\n");
     if (loadIconMatrix(DATA_DIRECTORY "/Hearts_80_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
     }
-    iconPackChosen = true;
+    gameGlobal.iconPackChosen = true;
     return;
   }
 
@@ -475,11 +466,11 @@ void EnterBoutonClic(int mouseX, int mouseY) {
   centerY = 10 * FONT_SIZE + CARD_RADIUS;
   distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
-    printf("Flocon");
+    printf("Pack flocon\n");
     if (loadIconMatrix(DATA_DIRECTORY "/Snowflakes_200_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
     }
-    iconPackChosen = true;
+    gameGlobal.iconPackChosen = true;
     return;
   }
 
@@ -487,11 +478,11 @@ void EnterBoutonClic(int mouseX, int mouseY) {
   centerY = 16 * FONT_SIZE + CARD_RADIUS;
   distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
-    printf("Food");
+    printf("Pack food\n");
     if (loadIconMatrix(DATA_DIRECTORY "/Gastronomy_230_90x90pixels.png") != 1) {
       printError(ECHEC_ICONES);
     }
-    iconPackChosen = true;
+    gameGlobal.iconPackChosen = true;
     return;
   }
 
@@ -509,7 +500,7 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     printf("%d icones\n", nbChosen);
     cardFileName[11] = nbChosen - 1 + '0';
     readCardFile(cardFileName);
-    nbIconChosen = true;
+    gameGlobal.nbIconChosen = true;
     return;
   }
 
@@ -518,9 +509,9 @@ void EnterBoutonClic(int mouseX, int mouseY) {
 
 Card getCardFromPosition(CardPosition cardPos) {
   if (cardPos == UpperCard)
-    return cardUpperGlobal;
+    return gameGlobal.cardUpper;
   else
-    return cardLowerGlobal;
+    return gameGlobal.cardLower;
 }
 
 int main(int argc, char **argv) {
@@ -532,13 +523,13 @@ int main(int argc, char **argv) {
   }
 
   // Initialisation des variables globales
-  timerRunning = false;
-  iconPackChosen = false;
-  nbIconChosen = false;
-  timeGlobal = 30;
-  scoreGlobal = 0;
-  nbFalse = 0;
-  resultatClicGlobal = INDEFINI;
+  gameGlobal.timerRunning = false;
+  gameGlobal.iconPackChosen = false;
+  gameGlobal.nbIconChosen = false;
+  gameGlobal.time = 30;
+  gameGlobal.score = 0;
+  gameGlobal.nbFalse = 0;
+  gameGlobal.resultatClic = INDEFINI;
 
   mainLoop();
 

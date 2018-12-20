@@ -31,7 +31,15 @@ typedef struct {
   int nbIcons;
   int nbCards;
   Card* cards;
-} Deck;
+  Card cardUpper, cardLower; // cartes du haut et du bas
+  int time, score, nbFalse;  // temps restant et score du joueur
+  bool timerRunning;   // état du compte à rebours (lancé/non lancé)
+  bool iconPackChosen; // est-ce que le pack d'icônes a été choisi ?
+  bool nbIconChosen;   // est-ce que le nombre d'icônes par carte a été choisi ?
+  Resultat resultatClic;
+    // vaut INCORRECT à si le joueur a fait une erreur,
+    // CORRECT si il a une bonne réponse et INDEFINI sinon
+} Game;
 
 #include "graphics.h"
 
