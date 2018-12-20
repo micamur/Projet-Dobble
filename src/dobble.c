@@ -10,7 +10,7 @@
 #include "dobble.h"
 #include "graphics.h"
 
-static bool timerRunning = false; // État du compte à rebours (lancé/non lancé)
+static bool timerRunning; // État du compte à rebours (lancé/non lancé)
 
 Card cardUpperGlobal, cardLowerGlobal; // Cartes du haut et du bas
 Deck deckGlobal;                       // Deck des cartes du jeu actuel
@@ -65,9 +65,9 @@ void initCardIcons(Card currentCard) {
   int angleOffset = rand() % 360; // random between 0 and 359
 
   // Placement des icônes en cercle (régulièrement)
-  for (int angle = 0; angle < 360; angle += 360 / (deckGlobal.nbIcons - 1)) {
-    initIcon(&currentCard.icons[currentIcon], (angle + angleOffset) % 360);
-    currentIcon++;
+  for (int angle = angleOffset; currentIcon < deckGlobal.nbIcons - 1;
+       angle += 360 / (deckGlobal.nbIcons - 1)) {
+    initIcon(&currentCard.icons[currentIcon++], angle % 360);
   }
 
   // Placement d'un icône au centre
@@ -96,7 +96,6 @@ void readCardFile(char const *fileName) {
   int nbCards, nbIcons;
   if (fscanf(data, "%d %d", &nbCards, &nbIcons) != 2 || nbCards == 0 ||
       nbIcons == 0) {
-    printf("%d %d\n", nbCards, nbIcons);
     printError(INCORRECT_FORMAT);
   }
   initDeck(nbCards, nbIcons);
@@ -132,7 +131,6 @@ Resultat onMouseClick(int mouseX, int mouseY) {
   if (!timerRunning && !(iconPackChosen && nbIconChosen)) {
     EnterBoutonClic(mouseX, mouseY);
     showWindow();
-    printf("ici4\n");
     if (!(iconPackChosen && nbIconChosen)) {
       return INDEFINI;
     }
@@ -146,7 +144,6 @@ Resultat onMouseClick(int mouseX, int mouseY) {
     // on enclanche le timmer
     startTimer();
     timerRunning = true;
-    printf("ici5\n");
     return INDEFINI;
   }
 
@@ -291,7 +288,7 @@ void renderScene() {
 
     // Crée le texte qui sera affiché avec le titre, le score et le temps
     // restant
-    sprintf(title, "Ai & Yuki -Dobble     Score : %d", scoreGlobal);
+    sprintf(title, "Ai & Yuki - Dobble     Score : %d", scoreGlobal);
     drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
              TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
     sprintf(title, "Temps restant : %ds", timeGlobal);
@@ -327,7 +324,7 @@ void afficheMenuFin() {
 void afficheStats() {
   char title[100];
 
-  sprintf(title, "Ai & Yuki -Dobble     Score : %d", scoreGlobal);
+  sprintf(title, "Ai & Yuki - Dobble     Score : %d", scoreGlobal);
   drawText(title, WIN_WIDTH / 2, 0.4 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
@@ -371,7 +368,7 @@ void afficheTitreMenuDebut() {
   drawText(title, WIN_WIDTH / 2, 1.6 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 
-  sprintf(title, "Choisissez le nombres d'icones par cartes!");
+  sprintf(title, "Choisissez le nombres d'icônes par carte !");
   drawText(title, WIN_WIDTH / 2, 2.8 * FONT_SIZE, Center, Top, TEXTCOLOR,
            TEXTCOLOR, TEXTCOLOR, GENERALCOLOR);
 }
@@ -444,6 +441,20 @@ void ExitBoutonClic(int mouseX, int mouseY) {
   }
 }
 
+bool testnbIconsButton(int mouseX, int mouseY, float offsetX, int offsetY,
+                       int nbButton, int *nbChosen) {
+  float rayon = ((CARD_RADIUS + 5) / 3);
+  int centerY = offsetY * FONT_SIZE + CARD_RADIUS;
+  int centerX = WIN_WIDTH * offsetX;
+  float distance = dist(mouseX, mouseY, centerX, centerY);
+
+  if (distance <= rayon) {
+    *nbChosen = nbButton;
+    return true;
+  }
+  return false;
+}
+
 void EnterBoutonClic(int mouseX, int mouseY) {
   float rayon = ((CARD_RADIUS + 5) / 3);
   int centerX = WIN_WIDTH / 2;
@@ -484,81 +495,25 @@ void EnterBoutonClic(int mouseX, int mouseY) {
     return;
   }
 
-  // Test si le clic est au niveau du bouton 3, puis 4 puis 5
-  centerX = WIN_WIDTH / 4;
-  centerY = 23 * FONT_SIZE + CARD_RADIUS;
-  distance = dist(mouseX, mouseY, centerX, centerY);
-  if (distance <= rayon) {
-    printf("3 icones");
-    char const *cardFileName = "../data/pg22.txt";
+  char cardFileName[100] = "../data/pg20.txt";
+  int nbChosen = 0;
+
+  // Test si le clic est au niveau du bouton 3, 4, 5, 6, 8 ou 9
+  if (testnbIconsButton(mouseX, mouseY, 1 / 4., 23, 3, &nbChosen) ||
+      testnbIconsButton(mouseX, mouseY, 1 / 2., 23, 4, &nbChosen) ||
+      testnbIconsButton(mouseX, mouseY, 3 / 4., 23, 5, &nbChosen) ||
+      testnbIconsButton(mouseX, mouseY, 1 / 4., 27, 6, &nbChosen) ||
+      testnbIconsButton(mouseX, mouseY, 1 / 2., 27, 8, &nbChosen) ||
+      testnbIconsButton(mouseX, mouseY, 3 / 4., 27, 9, &nbChosen)) {
     // Lecture du fichier de cartes
+    printf("%d icones\n", nbChosen);
+    cardFileName[11] = nbChosen - 1 + '0';
     readCardFile(cardFileName);
     nbIconChosen = true;
     return;
   }
 
-  centerX = WIN_WIDTH / 2;
-  distance = dist(mouseX, mouseY, centerX, centerY);
-  if (distance <= rayon) {
-    printf("4 icones");
-    char const *cardFileName = "../data/pg23.txt";
-    // Lecture du fichier de cartes
-    readCardFile(cardFileName);
-    nbIconChosen = true;
-    return;
-  }
-
-  centerX = (WIN_WIDTH * 3) / 4;
-  distance = dist(mouseX, mouseY, centerX, centerY);
-  if (distance <= rayon) {
-    printf("5 icones");
-    char const *cardFileName = "../data/pg24.txt";
-    // Lecture du fichier de cartes
-    readCardFile(cardFileName);
-    nbIconChosen = true;
-    return;
-  }
-
-  // Test si le clic est au niveau du bouton 6, puis 7 puis 8
-  centerX = WIN_WIDTH / 4;
-  centerY = 27 * FONT_SIZE + CARD_RADIUS;
-  distance = dist(mouseX, mouseY, centerX, centerY);
-  if (distance <= rayon) {
-    printf("6 icones");
-    char const *cardFileName = "../data/pg25.txt";
-    // Lecture du fichier de cartes
-    readCardFile(cardFileName);
-    nbIconChosen = true;
-    return;
-  }
-
-  centerX = WIN_WIDTH / 2;
-  distance = dist(mouseX, mouseY, centerX, centerY);
-  if (distance <= rayon) {
-    printf("8 icones");
-    printf("ici\n");
-    char const *cardFileName = "../data/pg27.txt";
-    printf("ici1\n");
-    // Lecture du fichier de cartes
-    readCardFile(cardFileName);
-    printf("ici2\n");
-    nbIconChosen = true;
-    return;
-  }
-
-  centerX = (WIN_WIDTH * 3) / 4;
-  distance = dist(mouseX, mouseY, centerX, centerY);
-  if (distance <= rayon) {
-    printf("9 icones");
-    char const *cardFileName = "../data/pg28.txt";
-    // Lecture du fichier de cartes
-    readCardFile(cardFileName);
-    nbIconChosen = true;
-    return;
-  }
-  // Si le clic est hors des deux boutons on sort de la fonction sans rien
-  // faire
-  return;
+  // Si le clic est hors des boutons on sort de la fonction sans rien faire
 }
 
 Card getCardFromPosition(CardPosition cardPos) {
@@ -571,13 +526,13 @@ Card getCardFromPosition(CardPosition cardPos) {
 int main(int argc, char **argv) {
   srand(time(NULL));
 
-  printf("dans le main\n");
   if (!initializeGraphics()) {
     printf("dobble: Echec de l'initialisation de la librairie graphique.\n");
     return 1;
   }
 
   // Initialisation des variables globales
+  timerRunning = false;
   iconPackChosen = false;
   nbIconChosen = false;
   timeGlobal = 30;

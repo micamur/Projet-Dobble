@@ -175,6 +175,12 @@ void afficheTitreMenuDebut();
 void afficheBoutonsDebut();
 
 /**
+ * Teste si un bouton pour sélectionner le nombre d'icônes a été cliqué
+ */
+bool testnbIconsButton(int mouseX, int mouseY, float offsetX, int offsetY,
+                       int nbButton, int *nbChosen);
+
+/**
  * Évènements déclenchés lors d'un clic sur un bouton du menu de début
  */
 void EnterBoutonClic(int mouseX, int mouseY);
