@@ -500,6 +500,6 @@ void freeGraphics() {
   SDL_DestroyTexture(g.iconTexture);
   SDL_DestroyRenderer(g.renderer);
   SDL_DestroyWindow(g.window);
-
+  printf("freeGraphics\n");
   SDL_Quit();
 }

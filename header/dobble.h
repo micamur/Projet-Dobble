@@ -60,13 +60,6 @@ void initDeck(int nbCards, int nbIcons);
 void initCard(Card* card, int nbIcons, int icons[]);
 
 /**
- * Lit un fichier contenant les icônes des cartes du jeu
- *
- * @param fileName Le nom du fichier
- */
-void readCardFile(char const *fileName);
-
-/**
  * Initialise aléatoirement une icône donnée (radius, rotation, scale)
  *
  * @param icon  L'icône courante
@@ -80,6 +73,19 @@ void initIcon(Icon *icon, double angle);
  * @param currentCard La carte courante
  */
 void initCardIcons(Card currentCard);
+
+/**
+ * Libère la mémoire du deck donc de toutes les cartes
+ *
+ */
+void freeDeck();
+
+/**
+ * Lit un fichier contenant les icônes des cartes du jeu
+ *
+ * @param fileName Le nom du fichier
+ */
+void readCardFile(char const *fileName);
 
 /**
  * Fonction appelée lors d'un mouvement du curseur de la souris sur la fenêtre.

@@ -49,6 +49,39 @@ void initCard(Card *card, int nbIcons, int icons[]) {
   }
 }
 
+void initIcon(Icon *icon, double angle) {
+  icon->angle = angle;
+  icon->rotation = rand() % 360; // random between 0 and 359
+  icon->radius =
+      CARD_RADIUS * (0.5 + (rand() % 3) * 0.1); // random between 0.5 and 0.7
+  icon->scale =
+      (rand() % 6) * 0.1 + 0.005 * icon->radius; // random between 0.6 and 1.2
+}
+
+void initCardIcons(Card currentCard) {
+  int currentIcon = 0;
+  int angleOffset = rand() % 360; // random between 0 and 359
+
+  // Placement des icônes en cercle (régulièrement)
+  for (int angle = 0; angle < 360; angle += 360 / (deckGlobal.nbIcons - 1)) {
+    initIcon(&currentCard.icons[currentIcon], (angle + angleOffset) % 360);
+    currentIcon++;
+  }
+
+  // Placement d'un icône au centre
+  initIcon(&currentCard.icons[currentIcon], 0.);
+  currentCard.icons[currentIcon].radius = 0;
+  currentCard.icons[currentIcon].scale = 1;
+}
+
+void freeDeck() {
+  for (int i = 0; i < deckGlobal.nbCards; i++) {
+    free(deckGlobal.cards[i].icons);
+  }
+  free(deckGlobal.cards);
+  printf("freeDeck\n");
+}
+
 void readCardFile(char const *fileName) {
   // Open the card file in read-only mode
   FILE *data = fopen(fileName, "r");
@@ -78,31 +111,6 @@ void readCardFile(char const *fileName) {
   }
 
   fclose(data);
-}
-
-void initIcon(Icon *icon, double angle) {
-  icon->angle = angle;
-  icon->rotation = rand() % 360; // random between 0 and 359
-  icon->radius =
-      CARD_RADIUS * (0.5 + (rand() % 3) * 0.1); // random between 0.5 and 0.7
-  icon->scale =
-      (rand() % 6) * 0.1 + 0.005 * icon->radius; // random between 0.6 and 1.2
-}
-
-void initCardIcons(Card currentCard) {
-  int currentIcon = 0;
-  int angleOffset = rand() % 360; // random between 0 and 359
-
-  // Placement des icônes en cercle (régulièrement)
-  for (int angle = 0; angle < 360; angle += 360 / (deckGlobal.nbIcons - 1)) {
-    initIcon(&currentCard.icons[currentIcon], (angle + angleOffset) % 360);
-    currentIcon++;
-  }
-
-  // Placement d'un icône au centre
-  initIcon(&currentCard.icons[currentIcon], 0.);
-  currentCard.icons[currentIcon].radius = 0;
-  currentCard.icons[currentIcon].scale = 1;
 }
 
 void onMouseMove(int x, int y) {
@@ -391,6 +399,8 @@ void ExitBoutonClic(int mouseX, int mouseY) {
   centerY = 10 * FONT_SIZE + CARD_RADIUS;
   distance = dist(mouseX, mouseY, centerX, centerY);
   if (distance <= rayon) {
+    freeDeck();
+    freeGraphics();
     exit(0);
   }
 }
@@ -469,8 +479,6 @@ int main(int argc, char **argv) {
   // Initilisé à INDEFINI : on n'a encore donné ni bonne ni mauvaise réponse
 
   mainLoop();
-
-  freeGraphics();
 
   return 0;
 }
