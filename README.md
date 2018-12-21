@@ -48,8 +48,9 @@ $ make
 $ ./dobble
 ```
 
-## Sources des packs d'icônes utilisés
+## Sources
 
-- Cœur : https://emojipedia.org/
-- Flocon : https://www.flaticon.com/packs/snowflakes
-- Food : https://www.flaticon.com/packs/gastronomy-set
+- Code de base fourni par nos professeurs HERMELLIN Emmanuel et TAVERNIER Vincent
+- Pack Cœur : https://emojipedia.org/
+- Pack Flocon : https://www.flaticon.com/packs/snowflakes
+- Pack Food : https://www.flaticon.com/packs/gastronomy-set
